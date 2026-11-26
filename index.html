@@ -112,6 +112,18 @@
       .step h3{margin:4px 0 4px;font-size:15px}
       .step p{margin:0;font-size:13px;color:var(--muted)}
 
+      /* ---------- Step navigation ---------- */
+      .steps-nav{display:flex;gap:6px;margin:18px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px}
+      .step-tab{flex:1;border:0;background:transparent;color:var(--muted);border-radius:999px;padding:10px 6px;font-weight:800;font-size:13.5px;cursor:pointer;min-height:44px}
+      .step-tab.is-active{background:var(--red);color:#fff}
+      .step-tab:disabled{opacity:.45;cursor:not-allowed}
+      .view{margin-top:18px}
+      .view-nav{display:flex;gap:9px;flex-wrap:wrap;margin-top:4px}
+      .view-nav .btn{flex:1;min-height:54px;font-size:15px}
+      .mix-summary{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+      .mix-summary li{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);font-size:14px}
+      .mix-summary li span{color:var(--muted);font-size:12.5px;white-space:nowrap}
+
       /* ---------- Layout ---------- */
       .layout{display:grid;grid-template-columns:1fr;gap:18px;margin-top:20px;align-items:start}
       @media (min-width:1024px){
@@ -360,29 +372,11 @@
 
           <label class="f" for="gateClientIdInput">クライアントID（初回だけ）</label>
           <input type="text" id="gateClientIdInput" placeholder="ここに貼り付け" autocomplete="off" autocapitalize="none" spellcheck="false" />
-          <p class="hint">まだ持っていない人は、下の「作り方」を見て作ってください。</p>
+          <p class="hint">ログインは Chrome で開いたときに動きます。</p>
           <button class="btn primary gate-login-btn" id="gateLoginBtn" type="button">
             <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#e62117"/></svg>
             YouTubeアカウントでログイン
           </button>
-          <details class="setup">
-            <summary>クライアントIDの作り方（初回だけ）</summary>
-            <ol class="setup-steps">
-              <li><span><a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> を開き、プロジェクトを作成（名前は自由）。</span></li>
-              <li><span>「APIとサービス」→「ライブラリ」で <b>YouTube Data API v3</b> を検索して有効化。</span></li>
-              <li><span>「認証情報」→「認証情報を作成」→「OAuth クライアント ID」を選び、種類は「ウェブアプリケーション」。</span></li>
-              <li><span>「承認済みの JavaScript 生成元」→「URI を追加」に、<b>下の枠のURLをそのまま</b>貼って保存する。これが入れるURLです。
-                <span class="origin-box">
-                  <span class="olabel">▼ 入れるURLはこれです（今開いているこのページのURL）</span>
-                  <span class="origin-value js-origin-value">読み込み中…</span>
-                  <button class="btn small primary js-origin-copy" type="button">このURLをコピーする</button>
-                  <span class="onote">※ 末尾に「/」は付けないでください。上の枠の文字を1文字も変えずに貼るのがコツです。</span>
-                </span>
-              </span></li>
-              <li><span>発行されたクライアントIDをコピーして、上の欄に貼り付け。</span></li>
-            </ol>
-            <p class="hint">※ ログインは Chrome などの通常ブラウザで開いたときに動きます。ほかのアプリ内ブラウザでは Google がログインをブロックする場合があります。</p>
-          </details>
 
           <div class="gate-or">または</div>
           <button class="btn ghost guest-btn" id="guestBtn" type="button">ログインせずに使う</button>
@@ -397,7 +391,7 @@
           </div>
           <h1>Playlist <span class="accent">Mixer</span></h1>
         </div>
-        <p class="lead">YouTubeアカウントでログインすると、自分のプレイリスト（非公開含む）がそのまま読み込めます。歌手別・気分別に分けたリストを選んで、ドライブで「ずっと流しっぱなし」にできる1本の長いプレイリストにまとめましょう。</p>
+        <p class="lead">リストを選んで、1本の長いプレイリストにまとめます。</p>
         <div class="hero-stats" aria-label="現在の集計">
           <div class="stat"><b id="statPlaylists">0</b><span>登録プレイリスト</span></div>
           <div class="stat"><b id="statTracks">0 曲</b><span>選択中の曲数</span></div>
@@ -405,17 +399,13 @@
         </div>
       </header>
 
-      <details class="howto" aria-label="使い方">
-        <summary><span class="dot"></span>使い方を見る<span class="howto-note">3ステップ・タップで開く</span><span class="chev" aria-hidden="true">▾</span></summary>
-        <div class="steps">
-          <div class="step"><div class="num">STEP 1</div><h3>プレイリストを取り込む</h3><p>アカウント連携のカードで「取り込む」を押すと、自分のプレイリストが登録リストに入ります。</p></div>
-          <div class="step"><div class="num">STEP 2</div><h3>選んでミックス</h3><p>組み合わせたいリストのカードをタップして選び、交互ミックスやシャッフルで1本にまとめます。選んだカードは色づいて明るくなります。</p></div>
-          <div class="step"><div class="num">STEP 3</div><h3>そのまま再生</h3><p>下の大きなボタンから YouTube で一括再生。アカウントへの保存もできます。</p></div>
-        </div>
-      </details>
+      <nav class="steps-nav" id="stepsNav" aria-label="進み方">
+        <button class="step-tab is-active" type="button" data-goto-step="1">1 選ぶ</button>
+        <button class="step-tab" type="button" data-goto-step="2">2 設定</button>
+        <button class="step-tab" type="button" data-goto-step="3" id="tabPlay">3 再生</button>
+      </nav>
 
-      <div class="layout">
-        <!-- LEFT -->
+      <div class="view" id="viewSelect">
         <div>
           <section class="card" aria-labelledby="acctH">
             <div class="acct-head">
@@ -425,33 +415,14 @@
             <p class="sub">ログインすると、あなたのアカウントのプレイリスト（非公開含む）を読み込んで、そのままミックスに使えます。読み取り専用の許可だけで、勝手に投稿・削除はしません。</p>
 
             <div id="loginArea">
-              <label class="f" for="clientIdInput">OAuth クライアントID（初回のみ・無料）</label>
-              <input type="text" id="clientIdInput" placeholder="例：1234567890-abcdefg.apps.googleusercontent.com" autocomplete="off" autocapitalize="none" spellcheck="false" />
-              <p class="hint">Google Cloud で発行する「ウェブアプリケーション用」のIDです。下の手順で5分ほどで作れます。IDはこの端末のブラウザ内にだけ保存されます。</p>
+              <label class="f" for="clientIdInput">クライアントID（初回のみ）</label>
+              <input type="text" id="clientIdInput" placeholder="ここに貼り付け" autocomplete="off" autocapitalize="none" spellcheck="false" />
               <div class="btn-row">
                 <button class="btn primary" id="loginBtn" type="button">
                   <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#e62117"/></svg>
                   YouTubeアカウントでログイン
                 </button>
               </div>
-              <details class="setup">
-                <summary>クライアントIDの作り方（初回だけ）</summary>
-                <ol class="setup-steps">
-                  <li><span><a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> を開き、プロジェクトを作成（名前は自由）。</span></li>
-                  <li><span>「APIとサービス」→「ライブラリ」で <b>YouTube Data API v3</b> を検索して有効化。</span></li>
-                  <li><span>「認証情報」→「認証情報を作成」→「OAuth クライアント ID」を選び、種類は「ウェブアプリケーション」。</span></li>
-                  <li><span>「承認済みの JavaScript 生成元」→「URI を追加」に、<b>下の枠のURLをそのまま</b>貼って保存する。これが入れるURLです。
-                    <span class="origin-box">
-                      <span class="olabel">▼ 入れるURLはこれです（今開いているこのページのURL）</span>
-                      <span class="origin-value js-origin-value">読み込み中…</span>
-                      <button class="btn small primary js-origin-copy" type="button">このURLをコピーする</button>
-                      <span class="onote">※ 末尾に「/」は付けないでください。上の枠の文字を1文字も変えずに貼るのがコツです。</span>
-                    </span>
-                  </span></li>
-                  <li><span>発行されたクライアントIDをコピーして、上の欄に貼り付け。</span></li>
-                </ol>
-                <p class="hint">※ ログインは Chrome などの通常ブラウザで開いたときに動きます。ほかのアプリ内ブラウザでは Google がログインをブロックする場合があります。</p>
-              </details>
             </div>
 
             <div id="accountArea" hidden>
@@ -487,75 +458,81 @@
             <p class="sub">カードをタップで選択／解除。選んだカードは色づいて明るくなります。</p>
             <div id="playlistList"></div>
           </section>
-        </div>
-
-        <!-- RIGHT -->
-        <div>
-          <section class="card" aria-labelledby="mixH">
-            <h2 id="mixH"><span class="dot"></span>ミックス設定</h2>
-            <p class="sub">運転中はアーティストが偏らない「交互ミックス」や「アーティスト分散」がおすすめです。</p>
-
-            <div class="seg" role="group" aria-label="並び順">
-              <button type="button" data-mode="append"><b>そのままつなげる</b><span>リスト順に全部つなぐ</span></button>
-              <button type="button" data-mode="interleave" class="sel"><b>交互ミックス</b><span>各リストから1曲ずつ順番に</span></button>
-              <button type="button" data-mode="spread"><b>アーティスト分散</b><span>同じ歌手が続かないよう並べ替え</span></button>
-              <button type="button" data-mode="shuffle"><b>シャッフル</b><span>全体をランダムに</span></button>
-            </div>
-
-            <div class="switch-row">
-              <div class="txt"><b>重複する曲を取り除く</b><span>同じ動画・同じ「曲名＋アーティスト」は1曲にまとめます</span></div>
-              <button class="switch" id="dedupeSwitch" type="button" role="switch" aria-checked="true" aria-label="重複する曲を取り除く"></button>
-            </div>
-            <div class="switch-row">
-              <div class="txt"><b>各プレイリストを均等に使う</b><span>交互・分散のとき、曲数が多いリストに偏らないよう調整します</span></div>
-              <button class="switch" id="balanceSwitch" type="button" role="switch" aria-checked="false" aria-label="各プレイリストを均等に使う"></button>
-            </div>
-
-            <button class="btn primary big-mix" id="mixBtn" type="button">▶ ミックスを作成する</button>
-          </section>
-
-          <section class="card" aria-labelledby="resultH">
-            <div class="result-head">
-              <div>
-                <h2 id="resultH"><span class="dot"></span>ミックス結果</h2>
-                <p class="sub" id="resultSub" style="margin-bottom:0">まだミックスしていません。リストを選んで、画面下の「ミックスを作成」を押してください。</p>
-              </div>
-              <div class="drive-badge" id="driveBadge" hidden>合計 <b id="driveTime">0:00</b> ・ <span id="driveNote"></span></div>
-            </div>
-
-            <ol class="tracklist" id="resultList"></ol>
-            <div class="notice" id="resultNotice" hidden></div>
-
-            <div class="btn-row">
-              <a class="btn primary" id="openYtBtn" href="#" target="_blank" rel="noopener" hidden>▶ YouTubeで一括再生</a>
-              <button class="btn" id="saveToAccountBtn" type="button" disabled>アカウントにプレイリストとして保存</button>
-              <button class="btn" id="copyBtn" type="button" disabled>リストをコピー</button>
-              <button class="btn" id="dlTxtBtn" type="button" disabled>TXTで保存</button>
-              <button class="btn" id="dlM3uBtn" type="button" disabled>M3Uで保存</button>
-              <button class="btn ghost" id="reshuffleBtn" type="button" disabled>もう一度シャッフル</button>
-            </div>
-            <p class="hint">アカウントへの保存は、曲数が多いと YouTube API の1日の上限に達して途中で止まることがあります（目安：100曲で上限の半分ほど）。長いミックスは「YouTubeで一括再生」が確実です。</p>
-          </section>
-
-          <details class="card code-details">
-            <summary style="cursor:pointer;font-weight:900;font-size:15px;list-style:none;display:flex;align-items:center;gap:9px;min-height:44px"><span class="dot" style="width:9px;height:9px;border-radius:50%;background:var(--red);flex:none"></span>コードをダウンロード（HTML / CSS / JS）<span style="margin-left:auto;font-size:12px;color:var(--muted)">タップで開く ▾</span></summary>
-            <p class="sub" style="margin-top:10px">このアプリのコードを、ご希望の3ファイル形式で書き出せます。3つを同じフォルダに置けば、そのままブラウザで開けます。</p>
-            <div class="code-grid">
-              <div class="code-file"><div class="fname">index.html</div><p>画面の骨組み。style.css と script.js を読み込みます。</p><button class="btn small" type="button" data-dl="html">ダウンロード</button></div>
-              <div class="code-file"><div class="fname">style.css</div><p>このページの見た目すべて。</p><button class="btn small" type="button" data-dl="css">ダウンロード</button></div>
-              <div class="code-file"><div class="fname">script.js</div><p>追加・ミックス・書き出しの処理すべて。</p><button class="btn small" type="button" data-dl="js">ダウンロード</button></div>
-            </div>
-          </details>
+          <div class="view-nav">
+            <button class="btn primary" type="button" id="toMixBtn">次へ：ミックス設定を確認 →</button>
+          </div>
         </div>
       </div>
 
-      <footer>読み込んだプレイリストとミックス結果は、このタブの中だけで扱います（ページを閉じると消えます）。ログインの許可はブラウザと Google の間だけでやり取りされ、このページがパスワードを見ることはありません。YouTube / YouTube Music は Google LLC の商標です。</footer>
+      <div class="view" id="viewMix" hidden>
+        <section class="card" aria-labelledby="confirmH">
+          <h2 id="confirmH"><span class="dot"></span>選択中のプレイリスト</h2>
+          <p class="sub" id="confirmSub">まだ選ばれていません。</p>
+          <ul class="mix-summary" id="mixSummary"></ul>
+          <div class="btn-row">
+            <button class="btn ghost" type="button" data-goto-step="1">← 選び直す</button>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="mixH">
+          <h2 id="mixH"><span class="dot"></span>ミックス設定</h2>
+          <p class="sub">運転中はアーティストが偏らない「交互ミックス」や「アーティスト分散」がおすすめです。</p>
+
+          <div class="seg" role="group" aria-label="並び順">
+            <button type="button" data-mode="append"><b>そのままつなげる</b><span>リスト順に全部つなぐ</span></button>
+            <button type="button" data-mode="interleave" class="sel"><b>交互ミックス</b><span>各リストから1曲ずつ順番に</span></button>
+            <button type="button" data-mode="spread"><b>アーティスト分散</b><span>同じ歌手が続かないよう並べ替え</span></button>
+            <button type="button" data-mode="shuffle"><b>シャッフル</b><span>全体をランダムに</span></button>
+          </div>
+
+          <div class="switch-row">
+            <div class="txt"><b>重複する曲を取り除く</b><span>同じ動画・同じ「曲名＋アーティスト」は1曲にまとめます</span></div>
+            <button class="switch" id="dedupeSwitch" type="button" role="switch" aria-checked="true" aria-label="重複する曲を取り除く"></button>
+          </div>
+          <div class="switch-row">
+            <div class="txt"><b>各プレイリストを均等に使う</b><span>交互・分散のとき、曲数が多いリストに偏らないよう調整します</span></div>
+            <button class="switch" id="balanceSwitch" type="button" role="switch" aria-checked="false" aria-label="各プレイリストを均等に使う"></button>
+          </div>
+
+          <button class="btn primary big-mix" id="mixBtn" type="button">▶ ミックスを作って再生画面へ</button>
+        </section>
+      </div>
+
+      <div class="view" id="viewPlay" hidden>
+        <section class="card" aria-labelledby="resultH">
+          <div class="result-head">
+            <div>
+              <h2 id="resultH"><span class="dot"></span>再生リスト</h2>
+              <p class="sub" id="resultSub" style="margin-bottom:0">まだミックスしていません。「設定」画面でミックスを作成してください。</p>
+            </div>
+            <div class="drive-badge" id="driveBadge" hidden>合計 <b id="driveTime">0:00</b> ・ <span id="driveNote"></span></div>
+          </div>
+
+          <ol class="tracklist" id="resultList"></ol>
+          <div class="notice" id="resultNotice" hidden></div>
+
+          <div class="btn-row">
+            <a class="btn primary" id="openYtBtn" href="#" target="_blank" rel="noopener" hidden>▶ YouTubeで一括再生</a>
+            <button class="btn" id="saveToAccountBtn" type="button" disabled>アカウントに保存</button>
+            <button class="btn" id="copyBtn" type="button" disabled>リストをコピー</button>
+            <button class="btn ghost" id="reshuffleBtn" type="button" disabled>もう一度シャッフル</button>
+          </div>
+          <p class="hint">長いミックスは「YouTubeで一括再生」が確実です。</p>
+          <div class="btn-row">
+            <button class="btn ghost" type="button" data-goto-step="2">← 設定に戻る</button>
+            <button class="btn ghost" type="button" data-goto-step="1">選び直す</button>
+          </div>
+        </section>
+      </div>
+
+      <footer>YouTube / YouTube Music は Google LLC の商標です。</footer>
       </div><!-- /#appView -->
     </div>
 
-    <div class="bottombar" id="bottomBar" role="region" aria-label="ミックス操作" hidden>
+    <div class="bottombar" id="bottomBar" role="region" aria-label="次の操作" hidden>
       <div class="bb-info"><b id="bbTime">0:00</b><span id="bbLabel">プレイリストが未選択です</span></div>
-      <button class="btn primary" id="bbMixBtn" type="button">▶ ミックスを作成</button>
+      <button class="btn primary" id="bbNextBtn" type="button">次へ →</button>
+      <button class="btn primary" id="bbMixBtn" type="button" hidden>▶ ミックスを作成</button>
       <a class="btn primary" id="bbPlayBtn" href="#" target="_blank" rel="noopener" hidden>▶ 再生する</a>
     </div>
 
@@ -734,16 +711,29 @@
   function updateBottomBar(){
     var bbTime = $("bbTime"), bbLabel = $("bbLabel");
     if(!bbTime) return;
-    if(state.result.length){
+    var nextBtn = $("bbNextBtn"), mixBtn = $("bbMixBtn"), playBtn = $("bbPlayBtn");
+    if(currentStep === 3 && state.result.length){
       bbTime.textContent = fmt(resultSec());
       bbLabel.textContent = "ミックス結果 " + state.result.length + " 曲";
+      if(nextBtn) nextBtn.hidden = true;
+      if(mixBtn) mixBtn.hidden = true;
       return;
     }
     var sel = selectedPlaylists();
     var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
     var sec = sel.reduce(function(a,p){return a+plSec(p);},0);
     bbTime.textContent = fmt(sec);
-    bbLabel.textContent = tracks ? ("選択中 " + tracks + " 曲 ・ " + sel.length + " リスト") : "プレイリストが未選択です";
+    if(currentStep === 1){
+      bbLabel.textContent = tracks ? ("選択中 " + tracks + " 曲 ・ " + sel.length + " リスト") : "プレイリストが未選択です";
+      if(nextBtn){ nextBtn.hidden = false; nextBtn.textContent = "次へ：設定を確認 →"; }
+      if(mixBtn) mixBtn.hidden = true;
+      if(playBtn) playBtn.hidden = true;
+    } else if(currentStep === 2){
+      bbLabel.textContent = tracks ? ("選択中 " + tracks + " 曲でミックスします") : "プレイリストが未選択です";
+      if(nextBtn) nextBtn.hidden = true;
+      if(mixBtn) mixBtn.hidden = false;
+      if(playBtn) playBtn.hidden = true;
+    }
   }
 
   /* ---------- mixing ---------- */
@@ -819,7 +809,35 @@
     state.result = out;
     renderResult();
     toast("ミックスを作成しました（" + out.length + " 曲）");
-    document.getElementById("resultH").scrollIntoView({behavior:"smooth", block:"start"});
+    goToStep(3);
+  }
+
+  /* ---------- 3画面の切り替え ---------- */
+  var currentStep = 1;
+  function goToStep(n){
+    if(n === 2 && !selectedPlaylists().length){ toast("先にプレイリストを1つ以上選んでください"); n = 1; }
+    if(n === 3 && !state.result.length){ toast("先にミックスを作成してください"); n = selectedPlaylists().length ? 2 : 1; }
+    currentStep = n;
+    $("viewSelect").hidden = n !== 1;
+    $("viewMix").hidden = n !== 2;
+    $("viewPlay").hidden = n !== 3;
+    document.querySelectorAll("[data-goto-step]").forEach(function(b){
+      if(b.classList.contains("step-tab")) b.classList.toggle("is-active", +b.getAttribute("data-goto-step") === n);
+    });
+    if(n === 2) renderMixSummary();
+    updateBottomBar();
+    window.scrollTo(0, 0);
+  }
+  function renderMixSummary(){
+    var sel = selectedPlaylists();
+    var box = $("mixSummary");
+    if(!sel.length){ $("confirmSub").textContent = "まだ選ばれていません。「選ぶ」画面に戻ってください。"; box.innerHTML = ""; return; }
+    var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
+    var sec = sel.reduce(function(a,p){return a+plSec(p);},0);
+    $("confirmSub").textContent = sel.length + " リスト ・ " + tracks + " 曲 ・ 合計 " + fmt(sec) + "（" + fmtLong(sec) + "）でミックスします。";
+    box.innerHTML = sel.map(function(pl){
+      return '<li><b>' + esc(pl.name) + '</b><span>' + pl.tracks.length + ' 曲 ・ ' + fmt(plSec(pl)) + '</span></li>';
+    }).join("");
   }
 
   /* ---------- rendering: result ---------- */
@@ -828,8 +846,6 @@
     var list = $("resultList"), notice = $("resultNotice");
     var has = state.result.length > 0;
     $("copyBtn").disabled = !has;
-    $("dlTxtBtn").disabled = !has;
-    $("dlM3uBtn").disabled = !has;
     $("reshuffleBtn").disabled = !has;
     $("saveToAccountBtn").disabled = !has;
 
@@ -839,8 +855,9 @@
       $("driveBadge").hidden = true;
       $("openYtBtn").hidden = true;
       $("bbPlayBtn").hidden = true;
-      $("bbMixBtn").hidden = false;
-      $("resultSub").textContent = "まだミックスしていません。リストを選んで、画面下の「ミックスを作成」を押してください。";
+      $("bbMixBtn").hidden = true;
+      $("bbNextBtn").hidden = false;
+      $("resultSub").textContent = "まだミックスしていません。「設定」画面でミックスを作成してください。";
       updateBottomBar();
       return;
     }
@@ -874,6 +891,7 @@
       bbPlay.hidden = false;
       bbPlay.href = ytBtn.href;
       $("bbMixBtn").hidden = true;
+      $("bbNextBtn").hidden = true;
       notice.hidden = false;
       notice.textContent = ids.length < state.result.length
         ? "URLから取り込んだ " + ids.length + " 曲は一括再生リンクに入っています。曲名だけの曲は、各曲の「YT Music ↗」から検索して開けます。" + (ids.length > 50 ? " 一括再生は先頭50曲までです。" : "")
@@ -881,7 +899,8 @@
     } else {
       ytBtn.hidden = true;
       bbPlay.hidden = true;
-      $("bbMixBtn").hidden = false;
+      $("bbMixBtn").hidden = true;
+      $("bbNextBtn").hidden = true;
       notice.hidden = false;
       notice.textContent = "曲名のみのリストのため一括再生リンクは作れません。各曲の「YT Music ↗」から開くか、曲のURLを含めて登録し直すと一括再生できるようになります。";
     }
@@ -893,16 +912,6 @@
       return (i+1) + ". " + t.title + (t.artist ? " - " + t.artist : "") + " (" + fmt(trackSec(t)) + ")";
     }).join("\n");
   }
-  function resultAsM3u(){
-    var lines = ["#EXTM3U"];
-    state.result.forEach(function(t){
-      lines.push("#EXTINF:" + trackSec(t) + "," + (t.artist ? t.artist + " - " : "") + t.title);
-      lines.push(t.videoId ? "https://music.youtube.com/watch?v=" + t.videoId
-                            : "https://music.youtube.com/search?q=" + encodeURIComponent((t.title + " " + (t.artist||"")).trim()));
-    });
-    return lines.join("\n");
-  }
-
   /* ---------- YouTube API 連携 ---------- */
   function gisReady(){
     return !!(window.google && google.accounts && google.accounts.oauth2);
@@ -918,7 +927,7 @@
     $("appView").hidden = false;
     $("bottomBar").hidden = false;
     document.body.classList.remove("gate-mode");
-    window.scrollTo(0, 0);
+    goToStep(1);
   }
   function showGate(){
     $("gateView").hidden = false;
@@ -1141,26 +1150,6 @@
     });
   }
 
-  /* ---------- code download (3 files) ---------- */
-  function standaloneHtml(){
-    return "<!doctype html>\n<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\" />\n" +
-      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n" +
-      "<title>YT Music Playlist Mixer</title>\n<link rel=\"stylesheet\" href=\"style.css\" />\n<script src=\"https://accounts.google.com/gsi/client\" async defer><\/script>\n</head>\n<body>\n" +
-      document.body.innerHTML
-        .replace(/<script[\s\S]*?<\/script>/g,"")
-        .replace('id="appView" hidden','id="appView"')
-        .replace('id="bottomBar" role="region" aria-label="ミックス操作" hidden','id="bottomBar" role="region" aria-label="ミックス操作"')
-        .replace(/<div class="toast"[\s\S]*?<\/div>\s*$/,"<div class=\"toast\" id=\"toast\" role=\"status\"></div>") +
-      "\n<script src=\"script.js\"><\/script>\n</body>\n</html>";
-  }
-  function pageCss(){
-    var styles = document.querySelectorAll("style");
-    var out = "";
-    styles.forEach(function(s){ out += s.textContent + "\n"; });
-    return out.trim();
-  }
-  function pageJs(){ return document.getElementById("appScript").textContent.trim(); }
-
   /* ---------- events ---------- */
   $("addPlaylistBtn").addEventListener("click", function(){
     var name = $("plName").value.trim();
@@ -1207,6 +1196,11 @@
 
   $("mixBtn").addEventListener("click", mix);
   $("bbMixBtn").addEventListener("click", mix);
+  $("bbNextBtn").addEventListener("click", function(){ goToStep(2); });
+  $("toMixBtn").addEventListener("click", function(){ goToStep(2); });
+  document.querySelectorAll("[data-goto-step]").forEach(function(btn){
+    btn.addEventListener("click", function(){ goToStep(+btn.getAttribute("data-goto-step")); });
+  });
   $("saveToAccountBtn").addEventListener("click", saveResultToAccount);
 
   /* ---------- ログインまわりのイベント ---------- */
@@ -1219,7 +1213,7 @@
   }
   function startLogin(inputEl){
     var v = inputEl.value.trim();
-    if(!v){ toast("クライアントIDを入力してください（下の「作り方」参照）"); inputEl.focus(); return; }
+    if(!v){ toast("クライアントIDを入力してください"); inputEl.focus(); return; }
     if(!/\.apps\.googleusercontent\.com$/.test(v)){ toast("クライアントIDの形式が違うようです（末尾は .apps.googleusercontent.com）"); inputEl.focus(); return; }
     syncClientId(v, inputEl);
     requestToken(READ_SCOPE, loadMyPlaylists);
@@ -1257,18 +1251,7 @@
       navigator.clipboard.writeText(text).then(function(){ toast("リストをコピーしました"); }, function(){ toast("コピーできませんでした"); });
     } else { toast("このブラウザではコピーに対応していません"); }
   });
-  $("dlTxtBtn").addEventListener("click", function(){ download("mixed-playlist.txt", resultAsText()); });
-  $("dlM3uBtn").addEventListener("click", function(){ download("mixed-playlist.m3u", resultAsM3u()); });
-
-  document.querySelectorAll("[data-dl]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var kind = btn.getAttribute("data-dl");
-      if(kind === "html") download("index.html", standaloneHtml(), "text/html");
-      if(kind === "css") download("style.css", pageCss(), "text/css");
-      if(kind === "js") download("script.js", pageJs(), "text/javascript");
-      toast("ダウンロードしました");
-    });
-  });
+  /* （ファイル書き出しは廃止：再生とアカウント保存に絞った） */
 
   // delegation for dynamic buttons
   document.addEventListener("click", function(e){
@@ -1298,29 +1281,6 @@
       state.result.splice(+t.getAttribute("data-del-result"),1);
       renderResult();
     }
-  });
-
-  /* ---------- 「承認済みの JavaScript 生成元」に入れるURLを表示 ---------- */
-  var currentOrigin = "";
-  try{ currentOrigin = window.location.origin || ""; }catch(e){ currentOrigin = ""; }
-  if(!currentOrigin || currentOrigin === "null"){
-    try{ currentOrigin = window.location.protocol + "//" + window.location.host; }catch(e){ currentOrigin = ""; }
-  }
-  document.querySelectorAll(".js-origin-value").forEach(function(el){
-    el.textContent = (currentOrigin && currentOrigin.indexOf("http") === 0)
-      ? currentOrigin
-      : "この画面では表示できません。Chromeでこのページを開き直すと、ここにURLが出ます";
-  });
-  document.querySelectorAll(".js-origin-copy").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      if(!currentOrigin || currentOrigin.indexOf("http") !== 0){ toast("URLを表示できませんでした。Chromeで開き直してください"); return; }
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(currentOrigin).then(
-          function(){ toast("コピーしました。そのまま Google Cloud の「URI を追加」に貼ってください"); },
-          function(){ toast("コピーできませんでした。枠のURLを長押しでコピーしてください"); }
-        );
-      } else { toast("枠のURLを長押しでコピーしてください"); }
-    });
   });
 
   renderPlaylists();
