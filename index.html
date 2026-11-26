@@ -92,8 +92,20 @@
       .stat b{display:block;font-family:"Archivo",sans-serif;font-size:19px;line-height:1.2}
       .stat span{font-size:12px;color:var(--muted)}
 
-      .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 4px}
-      .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+      /* 使い方（折りたたみ収納） */
+      .howto{margin:20px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+      .howto>summary{
+        cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;
+        padding:14px 16px;font-weight:900;font-size:15px;min-height:52px;
+      }
+      .howto>summary::-webkit-details-marker{display:none}
+      .howto>summary .howto-note{font-size:12px;font-weight:700;color:var(--muted)}
+      .howto>summary .chev{margin-left:auto;flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);transition:transform .18s ease}
+      .howto[open]>summary .chev{transform:rotate(180deg)}
+      .howto>summary .dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:none}
+      .howto .steps{padding:0 14px 14px}
+      .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0}
+      .step{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
       .step .num{
         font-family:"Archivo",sans-serif;font-weight:800;color:var(--red);font-size:13px;letter-spacing:.08em;
       }
@@ -136,20 +148,40 @@
       .btn:disabled{opacity:.45;cursor:not-allowed}
       .btn-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
 
-      /* playlist cards */
-      .pl-card{border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;margin-bottom:11px;background:var(--surface)}
-      .pl-card.off{opacity:.55}
-      .pl-head{display:flex;align-items:flex-start;gap:11px}
-      .pl-color{width:12px;height:12px;border-radius:4px;flex:none;margin-top:6px}
+      /* playlist cards — 選択中は色づいて明るく、未選択は沈んだ色に */
+      .pl-card{
+        --pl:var(--line);
+        border:1.5px solid var(--line);border-radius:var(--radius);
+        padding:0 15px 13px;margin-bottom:12px;background:var(--bg);
+        overflow:hidden;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,opacity .18s ease;
+      }
+      .pl-card.off{opacity:.62;filter:saturate(.45)}
+      .pl-card.on{
+        opacity:1;filter:none;
+        border-color:var(--pl);
+        background:color-mix(in srgb, var(--pl) 10%, var(--surface));
+        box-shadow:0 4px 16px color-mix(in srgb, var(--pl) 28%, transparent);
+      }
+      .pl-strip{height:6px;margin:0 -15px 12px;background:var(--pl);opacity:.35}
+      .pl-card.on .pl-strip{opacity:1}
+      .pl-head{display:flex;align-items:flex-start;gap:11px;cursor:pointer}
+      .pl-check{
+        width:27px;height:27px;border-radius:50%;flex:none;margin-top:1px;
+        border:2px solid var(--line);background:var(--surface);color:#fff;
+        display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;line-height:1;
+      }
+      .pl-card.on .pl-check{background:var(--pl);border-color:var(--pl)}
       .pl-meta{flex:1;min-width:0}
       .pl-name{font-weight:900;font-size:15px;overflow-wrap:anywhere}
-      .pl-info{font-size:12.5px;color:var(--muted)}
+      .pl-info{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+      .pl-badge{font-size:11px;font-weight:900;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--muted)}
+      .pl-card.on .pl-badge{background:var(--pl);color:#fff}
       .pl-actions{display:flex;gap:7px;flex:none;flex-wrap:wrap}
       .toggle-btn{
         border:1px solid var(--line);background:var(--surface-2);color:var(--ink);
         border-radius:999px;padding:8px 15px;font-size:13px;font-weight:700;cursor:pointer;min-height:44px;
       }
-      .toggle-btn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+      .pl-card.on .toggle-btn.on{background:var(--pl);color:#fff;border-color:var(--pl)}
       .icon-btn{
         width:44px;height:44px;min-height:44px;border-radius:9px;border:1px solid var(--line);
         background:transparent;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:15px;
@@ -216,8 +248,9 @@
       }
       .origin-box .btn{width:100%;margin-top:9px}
       .origin-box .onote{display:block;font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.55}
-      .yt-list{margin:12px 0 0;padding:0;list-style:none}
-      .yt-item{display:flex;gap:11px;align-items:center;padding:10px 0;border-top:1px dashed var(--line)}
+      .yt-list{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:9px}
+      .yt-item{display:flex;gap:11px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg)}
+      .yt-item.done{border-color:var(--green);background:color-mix(in srgb, var(--green) 9%, var(--surface))}
       .yt-item img{width:64px;height:36px;object-fit:cover;border-radius:6px;flex:none;background:var(--surface-2)}
       .yt-item .ym{flex:1;min-width:0}
       .yt-item .yn{font-weight:700;font-size:14px;overflow-wrap:anywhere;line-height:1.4}
@@ -305,7 +338,7 @@
       }
       @media (prefers-reduced-motion: reduce){
         html{scroll-behavior:auto}
-        .btn,.switch::after,.toast{transition:none}
+        .btn,.switch::after,.toast,.pl-card,.howto>summary .chev{transition:none}
         .spin{animation:none}
       }
     </style>
@@ -332,7 +365,7 @@
             <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#e62117"/></svg>
             YouTubeアカウントでログイン
           </button>
-          <details class="setup" open>
+          <details class="setup">
             <summary>クライアントIDの作り方（初回だけ）</summary>
             <ol class="setup-steps">
               <li><span><a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> を開き、プロジェクトを作成（名前は自由）。</span></li>
@@ -372,11 +405,14 @@
         </div>
       </header>
 
-      <section class="steps" aria-label="使い方">
-        <div class="step"><div class="num">STEP 1</div><h3>プレイリストを取り込む</h3><p>アカウント連携のカードで「取り込む」を押すと、自分のプレイリストが登録リストに入ります。</p></div>
-        <div class="step"><div class="num">STEP 2</div><h3>選んでミックス</h3><p>組み合わせたいリストにチェックを入れ、交互ミックスやシャッフルで1本にまとめます。</p></div>
-        <div class="step"><div class="num">STEP 3</div><h3>そのまま再生</h3><p>下の大きなボタンから YouTube で一括再生。アカウントへの保存もできます。</p></div>
-      </section>
+      <details class="howto" aria-label="使い方">
+        <summary><span class="dot"></span>使い方を見る<span class="howto-note">3ステップ・タップで開く</span><span class="chev" aria-hidden="true">▾</span></summary>
+        <div class="steps">
+          <div class="step"><div class="num">STEP 1</div><h3>プレイリストを取り込む</h3><p>アカウント連携のカードで「取り込む」を押すと、自分のプレイリストが登録リストに入ります。</p></div>
+          <div class="step"><div class="num">STEP 2</div><h3>選んでミックス</h3><p>組み合わせたいリストのカードをタップして選び、交互ミックスやシャッフルで1本にまとめます。選んだカードは色づいて明るくなります。</p></div>
+          <div class="step"><div class="num">STEP 3</div><h3>そのまま再生</h3><p>下の大きなボタンから YouTube で一括再生。アカウントへの保存もできます。</p></div>
+        </div>
+      </details>
 
       <div class="layout">
         <!-- LEFT -->
@@ -448,7 +484,7 @@
 
           <section class="card" aria-labelledby="listH">
             <h2 id="listH"><span class="dot"></span>登録したプレイリスト</h2>
-            <p class="sub">ミックスに含めるリストを選んでください。</p>
+            <p class="sub">カードをタップで選択／解除。選んだカードは色づいて明るくなります。</p>
             <div id="playlistList"></div>
           </section>
         </div>
@@ -501,15 +537,15 @@
             <p class="hint">アカウントへの保存は、曲数が多いと YouTube API の1日の上限に達して途中で止まることがあります（目安：100曲で上限の半分ほど）。長いミックスは「YouTubeで一括再生」が確実です。</p>
           </section>
 
-          <section class="card" aria-labelledby="codeH">
-            <h2 id="codeH"><span class="dot"></span>コードをダウンロード（HTML / CSS / JS）</h2>
-            <p class="sub">このアプリのコードを、ご希望の3ファイル形式で書き出せます。3つを同じフォルダに置けば、そのままブラウザで開けます。</p>
+          <details class="card code-details">
+            <summary style="cursor:pointer;font-weight:900;font-size:15px;list-style:none;display:flex;align-items:center;gap:9px;min-height:44px"><span class="dot" style="width:9px;height:9px;border-radius:50%;background:var(--red);flex:none"></span>コードをダウンロード（HTML / CSS / JS）<span style="margin-left:auto;font-size:12px;color:var(--muted)">タップで開く ▾</span></summary>
+            <p class="sub" style="margin-top:10px">このアプリのコードを、ご希望の3ファイル形式で書き出せます。3つを同じフォルダに置けば、そのままブラウザで開けます。</p>
             <div class="code-grid">
               <div class="code-file"><div class="fname">index.html</div><p>画面の骨組み。style.css と script.js を読み込みます。</p><button class="btn small" type="button" data-dl="html">ダウンロード</button></div>
               <div class="code-file"><div class="fname">style.css</div><p>このページの見た目すべて。</p><button class="btn small" type="button" data-dl="css">ダウンロード</button></div>
               <div class="code-file"><div class="fname">script.js</div><p>追加・ミックス・書き出しの処理すべて。</p><button class="btn small" type="button" data-dl="js">ダウンロード</button></div>
             </div>
-          </section>
+          </details>
         </div>
       </div>
 
@@ -668,17 +704,18 @@
                  '<span class="d">' + (t.durationSec ? fmt(t.durationSec) : "—") + '</span>' +
                  '<button class="icon-btn" type="button" data-del-track="' + pl.id + ':' + i + '" aria-label="この曲を削除" style="width:38px;height:38px;min-height:38px;font-size:12px">✕</button></li>';
         }).join("");
-        return '<article class="pl-card' + (pl.included ? "" : " off") + '">' +
-          '<div class="pl-head">' +
-            '<span class="pl-color" style="background:' + pl.color + '"></span>' +
+        return '<article class="pl-card ' + (pl.included ? "on" : "off") + '" style="--pl:' + pl.color + '" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
+          '<div class="pl-strip" aria-hidden="true"></div>' +
+          '<div class="pl-head" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除">' +
+            '<span class="pl-check" aria-hidden="true">' + (pl.included ? "✓" : "") + '</span>' +
             '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' +
-            '<div class="pl-info">' + pl.tracks.length + ' 曲 ・ 合計 ' + fmt(plSec(pl)) + '</div></div>' +
+            '<div class="pl-info"><span class="pl-badge">' + (pl.included ? "選択中" : "未選択") + '</span><span>' + pl.tracks.length + ' 曲 ・ 合計 ' + fmt(plSec(pl)) + '</span></div></div>' +
             '<div class="pl-actions">' +
               '<button class="toggle-btn' + (pl.included ? " on" : "") + '" type="button" data-toggle-pl="' + pl.id + '">' + (pl.included ? "含める ✓" : "含めない") + '</button>' +
               '<button class="icon-btn" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">🗑</button>' +
             '</div>' +
           '</div>' +
-          (pl.tracks.length ? '<ul class="pl-tracks">' + trackRows + '</ul>' : '') +
+          (pl.tracks.length ? '<details class="pl-tracks-wrap"><summary style="cursor:pointer;font-size:12.5px;font-weight:700;color:var(--muted);padding:8px 0 2px;list-style:none">曲の一覧を見る（' + pl.tracks.length + '曲） ▾</summary><ul class="pl-tracks">' + trackRows + '</ul></details>' : '') +
         '</article>';
       }).join("");
     }
@@ -994,9 +1031,9 @@
     }
     wrap.innerHTML = '<ul class="yt-list">' + auth.myPlaylists.map(function(p){
       var done = !!auth.importedIds[p.id];
-      return '<li class="yt-item">' +
+      return '<li class="yt-item' + (done ? " done" : "") + '">' +
         (p.thumb ? '<img src="' + esc(p.thumb) + '" alt="" loading="lazy" />' : '') +
-        '<div class="ym"><div class="yn">' + esc(p.title) + '</div><div class="yc">' + p.count + ' 曲</div></div>' +
+        '<div class="ym"><div class="yn">' + esc(p.title) + '</div><div class="yc">' + p.count + ' 曲' + (done ? ' ・ 取込済み' : '') + '</div></div>' +
         '<button class="btn small" type="button" data-import-pl="' + esc(p.id) + '"' + (done ? " disabled" : "") + '>' + (done ? "取込済み ✓" : "取り込む") + '</button>' +
       '</li>';
     }).join("") + '</ul>' +
