@@ -1,0 +1,1294 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>YT Music Playlist Mixer — プレイリストを合わせて、長く聴ける1本に</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+      :root{
+        --bg:#f4f4f2;
+        --surface:#ffffff;
+        --surface-2:#ececea;
+        --ink:#141414;
+        --ink-2:#3d3d3d;
+        --muted:#6f6f6c;
+        --line:#dededb;
+        --red:#e62117;
+        --red-dark:#b9150d;
+        --red-soft:#fdeceb;
+        --green:#0e7a55;
+        --radius:14px;
+        --radius-sm:9px;
+        color-scheme:light;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#0c0c0d;
+          --surface:#17171a;
+          --surface-2:#212125;
+          --ink:#f5f5f3;
+          --ink-2:#d8d8d4;
+          --muted:#9a9a96;
+          --line:#2c2c30;
+          --red:#ff3b30;
+          --red-dark:#ff6b62;
+          --red-soft:#2b1512;
+          --green:#3ecf9a;
+          color-scheme:dark;
+        }
+      }
+      *{box-sizing:border-box}
+      [hidden]{display:none !important}
+      html{scroll-behavior:smooth}
+      body{
+        margin:0;background:var(--bg);color:var(--ink);
+        font-family:"Noto Sans JP",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+        line-height:1.65;font-size:15px;
+        -webkit-font-smoothing:antialiased;
+      }
+      button,[role="button"],select,summary,input:not([type="checkbox"],[type="radio"]),textarea{font:inherit}
+      button,select,summary{min-height:40px}
+      a{color:var(--red)}
+      .wrap{max-width:1180px;margin:0 auto;padding:0 14px 128px}
+      body.gate-mode .wrap{max-width:640px;padding-bottom:40px}
+
+      /* ---------- 初回ログイン画面（ゲート） ---------- */
+      .gate{padding:30px 0 6px}
+      .gate-brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+      .gate-brand .gname{font-family:"Archivo","Noto Sans JP",sans-serif;font-weight:800;font-size:24px;line-height:1.2}
+      .gate-brand .gname .accent{color:var(--red)}
+      .gate-card{padding:22px 20px;margin-bottom:14px}
+      .gate-card h2{font-size:20px;margin:0 0 10px;line-height:1.4}
+      .gate-login-btn{width:100%;min-height:56px;font-size:16px;margin-top:14px;border-radius:11px}
+      .gate-or{display:flex;align-items:center;gap:12px;margin:20px 0 12px;color:var(--muted);font-size:12px}
+      .gate-or::before,.gate-or::after{content:"";flex:1;border-top:1px solid var(--line)}
+      .guest-btn{width:100%}
+
+      /* ---------- Header ---------- */
+      .hero{padding:34px 0 8px}
+      .hero-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+      .mark{
+        width:46px;height:46px;border-radius:12px;background:var(--red);color:#fff;flex:none;
+        display:flex;align-items:center;justify-content:center;
+      }
+      .mark svg{width:26px;height:26px}
+      h1{
+        font-family:"Archivo","Noto Sans JP",sans-serif;font-weight:800;letter-spacing:.01em;
+        font-size:clamp(26px,4.6vw,40px);line-height:1.15;margin:0;
+      }
+      h1 .accent{color:var(--red)}
+      .hero p.lead{margin:12px 0 0;max-width:720px;color:var(--ink-2);font-size:15.5px}
+      .hero-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+      .stat{
+        background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+        padding:9px 14px;min-width:118px;
+      }
+      .stat b{display:block;font-family:"Archivo",sans-serif;font-size:19px;line-height:1.2}
+      .stat span{font-size:12px;color:var(--muted)}
+
+      .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 4px}
+      .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+      .step .num{
+        font-family:"Archivo",sans-serif;font-weight:800;color:var(--red);font-size:13px;letter-spacing:.08em;
+      }
+      .step h3{margin:4px 0 4px;font-size:15px}
+      .step p{margin:0;font-size:13px;color:var(--muted)}
+
+      /* ---------- Layout ---------- */
+      .layout{display:grid;grid-template-columns:1fr;gap:18px;margin-top:20px;align-items:start}
+      @media (min-width:1024px){
+        .layout{grid-template-columns:400px 1fr}
+      }
+      .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:18px}
+      .card h2{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+      .card h2 .dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:none}
+      .card .sub{margin:0 0 14px;font-size:13px;color:var(--muted)}
+      label.f{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}
+      label.f:first-of-type{margin-top:0}
+      input[type="text"],textarea,select{
+        width:100%;background:var(--bg);color:var(--ink);
+        border:1px solid var(--line);border-radius:var(--radius-sm);
+        padding:10px 12px;min-height:42px;
+      }
+      textarea{min-height:132px;resize:vertical;line-height:1.6;font-size:13.5px}
+      input:focus,textarea:focus,select:focus{outline:2px solid var(--red);outline-offset:1px;border-color:transparent}
+      .hint{font-size:12px;color:var(--muted);margin-top:6px}
+      .hint code{background:var(--surface-2);border-radius:5px;padding:1px 6px;font-size:11.5px}
+
+      .btn{
+        display:inline-flex;align-items:center;justify-content:center;gap:8px;
+        border-radius:var(--radius-sm);border:1px solid var(--line);
+        background:var(--surface);color:var(--ink);cursor:pointer;
+        padding:10px 16px;font-weight:700;font-size:14px;min-height:48px;text-decoration:none;
+        transition:transform .08s ease, background .15s ease, border-color .15s ease;
+      }
+      .btn:active{transform:scale(.98)}
+      .btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+      .btn.primary:hover{background:var(--red-dark)}
+      .btn.ghost{background:transparent}
+      .btn.small{min-height:44px;padding:8px 12px;font-size:13px}
+      .btn:disabled{opacity:.45;cursor:not-allowed}
+      .btn-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+
+      /* playlist cards */
+      .pl-card{border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;margin-bottom:11px;background:var(--surface)}
+      .pl-card.off{opacity:.55}
+      .pl-head{display:flex;align-items:flex-start;gap:11px}
+      .pl-color{width:12px;height:12px;border-radius:4px;flex:none;margin-top:6px}
+      .pl-meta{flex:1;min-width:0}
+      .pl-name{font-weight:900;font-size:15px;overflow-wrap:anywhere}
+      .pl-info{font-size:12.5px;color:var(--muted)}
+      .pl-actions{display:flex;gap:7px;flex:none;flex-wrap:wrap}
+      .toggle-btn{
+        border:1px solid var(--line);background:var(--surface-2);color:var(--ink);
+        border-radius:999px;padding:8px 15px;font-size:13px;font-weight:700;cursor:pointer;min-height:44px;
+      }
+      .toggle-btn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+      .icon-btn{
+        width:44px;height:44px;min-height:44px;border-radius:9px;border:1px solid var(--line);
+        background:transparent;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:15px;
+      }
+      .icon-btn:hover{color:var(--red);border-color:var(--red)}
+      .pl-tracks{margin:11px 0 0;padding:0;list-style:none;border-top:1px dashed var(--line)}
+      .pl-tracks li{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+      .pl-tracks li:last-child{border-bottom:none}
+      .pl-tracks .t{flex:1;min-width:0;overflow-wrap:anywhere}
+      .pl-tracks .a{color:var(--muted)}
+      .pl-tracks .d{color:var(--muted);font-family:"Archivo",sans-serif;font-size:12px;flex:none}
+      .empty{
+        border:1.5px dashed var(--line);border-radius:var(--radius);padding:26px 18px;text-align:center;color:var(--muted);font-size:13.5px;
+      }
+      .empty b{color:var(--ink);display:block;font-size:15px;margin-bottom:5px}
+
+      /* mix settings */
+      .seg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+      .seg button{
+        text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);
+        border-radius:var(--radius-sm);padding:12px 13px;cursor:pointer;min-height:60px;
+      }
+      .seg button b{display:block;font-size:14px}
+      .seg button span{font-size:12px;color:var(--muted)}
+      .seg button.sel{border-color:var(--red);background:var(--red-soft);box-shadow:inset 0 0 0 1px var(--red)}
+      .switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px dashed var(--line);margin-top:14px}
+      .switch-row .txt b{display:block;font-size:14px}
+      .switch-row .txt span{font-size:12px;color:var(--muted)}
+      .switch{
+        flex:none;width:60px;height:36px;border-radius:999px;border:1px solid var(--line);
+        background:var(--surface-2);position:relative;cursor:pointer;padding:0;min-height:36px;
+      }
+      .switch::after{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:var(--surface);border:1px solid var(--line);transition:left .18s ease}
+      .switch[aria-checked="true"]{background:var(--red);border-color:var(--red)}
+      .switch[aria-checked="true"]::after{left:27px;background:#fff;border-color:#fff}
+      .big-mix{width:100%;font-size:16px;min-height:56px;margin-top:16px;border-radius:11px}
+
+      /* account / YouTube 連携 */
+      .acct-badge{
+        display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 13px;
+        font-size:12.5px;font-weight:700;background:var(--surface-2);color:var(--muted);
+      }
+      .acct-badge .st-dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+      .acct-badge.ok{background:var(--red-soft);color:var(--ink)}
+      .acct-badge.ok .st-dot{background:var(--green)}
+      .acct-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+      .setup-steps{margin:10px 0 0;padding:0;list-style:none;counter-reset:setup}
+      .setup-steps li{counter-increment:setup;display:flex;gap:10px;padding:7px 0;font-size:13px;color:var(--ink-2);border-bottom:1px dashed var(--line)}
+      .setup-steps li:last-child{border-bottom:none}
+      .setup-steps li::before{
+        content:counter(setup);flex:none;width:22px;height:22px;border-radius:50%;
+        background:var(--red);color:#fff;font-family:"Archivo",sans-serif;font-weight:700;font-size:12px;
+        display:flex;align-items:center;justify-content:center;margin-top:1px;
+      }
+      .setup-steps code{background:var(--surface-2);border-radius:5px;padding:1px 6px;font-size:11.5px;overflow-wrap:anywhere}
+      details.setup{margin-top:12px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:4px 14px 10px;background:var(--bg)}
+      details.setup summary{cursor:pointer;font-weight:700;font-size:13.5px;padding:8px 0}
+      .origin-box{display:block;margin-top:10px;background:var(--surface);border:1.5px solid var(--red);border-radius:var(--radius-sm);padding:12px}
+      .origin-box .olabel{display:block;font-size:12px;font-weight:900;color:var(--red);margin-bottom:7px}
+      .origin-value{
+        display:block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+        font-size:14.5px;font-weight:700;line-height:1.5;overflow-wrap:anywhere;user-select:all;
+        background:var(--surface-2);border-radius:7px;padding:10px 11px;color:var(--ink);
+      }
+      .origin-box .btn{width:100%;margin-top:9px}
+      .origin-box .onote{display:block;font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.55}
+      .yt-list{margin:12px 0 0;padding:0;list-style:none}
+      .yt-item{display:flex;gap:11px;align-items:center;padding:10px 0;border-top:1px dashed var(--line)}
+      .yt-item img{width:64px;height:36px;object-fit:cover;border-radius:6px;flex:none;background:var(--surface-2)}
+      .yt-item .ym{flex:1;min-width:0}
+      .yt-item .yn{font-weight:700;font-size:14px;overflow-wrap:anywhere;line-height:1.4}
+      .yt-item .yc{font-size:12px;color:var(--muted)}
+      .spin{
+        width:16px;height:16px;border-radius:50%;flex:none;
+        border:2.5px solid var(--line);border-top-color:var(--red);
+        animation:spin .7s linear infinite;display:inline-block;vertical-align:-3px;
+      }
+      @keyframes spin{to{transform:rotate(360deg)}}
+
+      /* 下部固定バー（スマホ） */
+      .bottombar{
+        position:fixed;left:0;right:0;bottom:0;z-index:40;
+        background:var(--surface);border-top:1px solid var(--line);
+        padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+        display:flex;align-items:center;gap:12px;
+        box-shadow:0 -4px 18px rgba(0,0,0,.08);
+      }
+      .bottombar .bb-info{flex:1;min-width:0;line-height:1.35}
+      .bottombar .bb-info b{font-family:"Archivo",sans-serif;font-size:16px;display:block}
+      .bottombar .bb-info span{font-size:11.5px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .bottombar .btn{flex:none;min-height:52px;padding:10px 20px;font-size:15px}
+      @media (min-width:1024px){
+        .bottombar{left:50%;right:auto;transform:translateX(-50%);width:min(1180px,100%);border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:14px 14px 0 0}
+      }
+
+      /* result */
+      .result-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+      .drive-badge{
+        background:var(--ink);color:var(--bg);border-radius:var(--radius-sm);padding:9px 14px;font-size:13px;font-weight:700;
+      }
+      .drive-badge b{font-family:"Archivo",sans-serif;font-size:17px}
+      .tracklist{list-style:none;margin:14px 0 0;padding:0}
+      .tracklist li{
+        display:flex;gap:11px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line);
+      }
+      .tracklist li:last-child{border-bottom:none}
+      .no{
+        font-family:"Archivo",sans-serif;font-weight:700;color:var(--muted);font-size:13px;width:26px;flex:none;text-align:right;
+      }
+      .bar{width:5px;align-self:stretch;border-radius:3px;flex:none}
+      .tt{flex:1;min-width:0}
+      .tt .title{font-weight:700;font-size:14.5px;overflow-wrap:anywhere;line-height:1.4}
+      .tt .artist{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+      .tt .artist .src{color:var(--ink-2)}
+      .dur{font-family:"Archivo",sans-serif;font-size:12.5px;color:var(--muted);flex:none}
+      .mini-link{flex:none;font-size:12.5px;font-weight:700;text-decoration:none;padding:12px 6px}
+      .notice{
+        background:var(--red-soft);border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;color:var(--ink-2);margin-top:13px;
+      }
+      .toast{
+        position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
+        background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:999px;font-size:13.5px;font-weight:700;
+        opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:50;max-width:92vw;text-align:center;
+      }
+      .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+      .code-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+      .code-file{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 14px;background:var(--bg)}
+      .code-file .fname{font-family:"Archivo",monospace;font-weight:700;font-size:14px}
+      .code-file p{margin:3px 0 10px;font-size:12px;color:var(--muted)}
+      footer{margin-top:26px;font-size:12.5px;color:var(--muted);text-align:center}
+
+      @media (max-width:560px){
+        .tracklist li{flex-wrap:wrap;row-gap:2px}
+        .tracklist .tt{flex:1 1 170px}
+        .tracklist .dur{margin-left:auto}
+        .tt .artist .src{display:block}
+      }
+      @media (max-width:1023px){
+        .steps{grid-template-columns:1fr}
+        .code-grid{grid-template-columns:1fr}
+        .card{padding:16px 14px}
+        .hero{padding:24px 0 4px}
+        .hero-stats{gap:8px}
+        .stat{flex:1 1 100px;min-width:0;padding:8px 11px}
+        .pl-head{flex-wrap:wrap}
+        .pl-actions{margin-left:auto}
+        input[type="text"],textarea,select{font-size:16px} /* iOSの自動ズーム防止 */
+      }
+      @media (min-width:640px) and (max-width:1023px){
+        .steps{grid-template-columns:repeat(3,1fr)}
+        .seg{grid-template-columns:1fr 1fr}
+      }
+      @media (prefers-reduced-motion: reduce){
+        html{scroll-behavior:auto}
+        .btn,.switch::after,.toast{transition:none}
+        .spin{animation:none}
+      }
+    </style>
+  </head>
+  <body class="gate-mode">
+    <div class="wrap">
+
+      <!-- 初回はこのログイン画面だけを表示。本体（#appView）はログイン後に開く -->
+      <section class="gate" id="gateView" aria-labelledby="gateH">
+        <div class="gate-brand">
+          <div class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff"/></svg>
+          </div>
+          <div class="gname">Playlist <span class="accent">Mixer</span></div>
+        </div>
+
+        <div class="card gate-card">
+          <h2 id="gateH">YouTubeでログイン</h2>
+
+          <label class="f" for="gateClientIdInput">クライアントID（初回だけ）</label>
+          <input type="text" id="gateClientIdInput" placeholder="ここに貼り付け" autocomplete="off" autocapitalize="none" spellcheck="false" />
+          <p class="hint">まだ持っていない人は、下の「作り方」を見て作ってください。</p>
+          <button class="btn primary gate-login-btn" id="gateLoginBtn" type="button">
+            <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#e62117"/></svg>
+            YouTubeアカウントでログイン
+          </button>
+          <details class="setup" open>
+            <summary>クライアントIDの作り方（初回だけ）</summary>
+            <ol class="setup-steps">
+              <li><span><a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> を開き、プロジェクトを作成（名前は自由）。</span></li>
+              <li><span>「APIとサービス」→「ライブラリ」で <b>YouTube Data API v3</b> を検索して有効化。</span></li>
+              <li><span>「認証情報」→「認証情報を作成」→「OAuth クライアント ID」を選び、種類は「ウェブアプリケーション」。</span></li>
+              <li><span>「承認済みの JavaScript 生成元」→「URI を追加」に、<b>下の枠のURLをそのまま</b>貼って保存する。これが入れるURLです。
+                <span class="origin-box">
+                  <span class="olabel">▼ 入れるURLはこれです（今開いているこのページのURL）</span>
+                  <span class="origin-value js-origin-value">読み込み中…</span>
+                  <button class="btn small primary js-origin-copy" type="button">このURLをコピーする</button>
+                  <span class="onote">※ 末尾に「/」は付けないでください。上の枠の文字を1文字も変えずに貼るのがコツです。</span>
+                </span>
+              </span></li>
+              <li><span>発行されたクライアントIDをコピーして、上の欄に貼り付け。</span></li>
+            </ol>
+            <p class="hint">※ ログインは Chrome などの通常ブラウザで開いたときに動きます。ほかのアプリ内ブラウザでは Google がログインをブロックする場合があります。</p>
+          </details>
+
+          <div class="gate-or">または</div>
+          <button class="btn ghost guest-btn" id="guestBtn" type="button">ログインせずに使う</button>
+        </div>
+      </section>
+
+      <div id="appView" hidden>
+      <header class="hero">
+        <div class="hero-top">
+          <div class="mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff"/></svg>
+          </div>
+          <h1>Playlist <span class="accent">Mixer</span></h1>
+        </div>
+        <p class="lead">YouTubeアカウントでログインすると、自分のプレイリスト（非公開含む）がそのまま読み込めます。歌手別・気分別に分けたリストを選んで、ドライブで「ずっと流しっぱなし」にできる1本の長いプレイリストにまとめましょう。</p>
+        <div class="hero-stats" aria-label="現在の集計">
+          <div class="stat"><b id="statPlaylists">0</b><span>登録プレイリスト</span></div>
+          <div class="stat"><b id="statTracks">0 曲</b><span>選択中の曲数</span></div>
+          <div class="stat"><b id="statTime">0:00</b><span>選択中の合計時間</span></div>
+        </div>
+      </header>
+
+      <section class="steps" aria-label="使い方">
+        <div class="step"><div class="num">STEP 1</div><h3>プレイリストを取り込む</h3><p>アカウント連携のカードで「取り込む」を押すと、自分のプレイリストが登録リストに入ります。</p></div>
+        <div class="step"><div class="num">STEP 2</div><h3>選んでミックス</h3><p>組み合わせたいリストにチェックを入れ、交互ミックスやシャッフルで1本にまとめます。</p></div>
+        <div class="step"><div class="num">STEP 3</div><h3>そのまま再生</h3><p>下の大きなボタンから YouTube で一括再生。アカウントへの保存もできます。</p></div>
+      </section>
+
+      <div class="layout">
+        <!-- LEFT -->
+        <div>
+          <section class="card" aria-labelledby="acctH">
+            <div class="acct-head">
+              <h2 id="acctH" style="margin:0"><span class="dot"></span>YouTubeアカウント連携</h2>
+              <span class="acct-badge" id="acctBadge"><span class="st-dot"></span><span id="acctBadgeText">未ログイン</span></span>
+            </div>
+            <p class="sub">ログインすると、あなたのアカウントのプレイリスト（非公開含む）を読み込んで、そのままミックスに使えます。読み取り専用の許可だけで、勝手に投稿・削除はしません。</p>
+
+            <div id="loginArea">
+              <label class="f" for="clientIdInput">OAuth クライアントID（初回のみ・無料）</label>
+              <input type="text" id="clientIdInput" placeholder="例：1234567890-abcdefg.apps.googleusercontent.com" autocomplete="off" autocapitalize="none" spellcheck="false" />
+              <p class="hint">Google Cloud で発行する「ウェブアプリケーション用」のIDです。下の手順で5分ほどで作れます。IDはこの端末のブラウザ内にだけ保存されます。</p>
+              <div class="btn-row">
+                <button class="btn primary" id="loginBtn" type="button">
+                  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#e62117"/></svg>
+                  YouTubeアカウントでログイン
+                </button>
+              </div>
+              <details class="setup">
+                <summary>クライアントIDの作り方（初回だけ）</summary>
+                <ol class="setup-steps">
+                  <li><span><a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> を開き、プロジェクトを作成（名前は自由）。</span></li>
+                  <li><span>「APIとサービス」→「ライブラリ」で <b>YouTube Data API v3</b> を検索して有効化。</span></li>
+                  <li><span>「認証情報」→「認証情報を作成」→「OAuth クライアント ID」を選び、種類は「ウェブアプリケーション」。</span></li>
+                  <li><span>「承認済みの JavaScript 生成元」→「URI を追加」に、<b>下の枠のURLをそのまま</b>貼って保存する。これが入れるURLです。
+                    <span class="origin-box">
+                      <span class="olabel">▼ 入れるURLはこれです（今開いているこのページのURL）</span>
+                      <span class="origin-value js-origin-value">読み込み中…</span>
+                      <button class="btn small primary js-origin-copy" type="button">このURLをコピーする</button>
+                      <span class="onote">※ 末尾に「/」は付けないでください。上の枠の文字を1文字も変えずに貼るのがコツです。</span>
+                    </span>
+                  </span></li>
+                  <li><span>発行されたクライアントIDをコピーして、上の欄に貼り付け。</span></li>
+                </ol>
+                <p class="hint">※ ログインは Chrome などの通常ブラウザで開いたときに動きます。ほかのアプリ内ブラウザでは Google がログインをブロックする場合があります。</p>
+              </details>
+            </div>
+
+            <div id="accountArea" hidden>
+              <p class="sub" id="accountInfo" style="margin-bottom:0"></p>
+              <div class="btn-row">
+                <button class="btn" id="reloadPlBtn" type="button">↻ プレイリストを再読み込み</button>
+                <button class="btn ghost" id="logoutBtn" type="button">ログアウト</button>
+              </div>
+              <div id="ytListWrap"></div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="addH">
+            <h2 id="addH"><span class="dot"></span>プレイリストを追加</h2>
+            <p class="sub">1行に1曲。YouTube / YouTube Music のURLを貼ると動画IDを自動で読み取ります。</p>
+
+            <label class="f" for="plName">プレイリスト名</label>
+            <input type="text" id="plName" placeholder="例：米津玄師だけ / 夜ドライブ / 上げたいとき" autocomplete="off" />
+
+            <label class="f" for="plTracks">曲リスト</label>
+            <textarea id="plTracks" placeholder="Lemon - 米津玄師 (4:16)&#10;https://music.youtube.com/watch?v=xxxxxxxxxxx&#10;曲名 | アーティスト | https://youtu.be/xxxxxxxxxxx"></textarea>
+            <p class="hint">書式：<code>曲名 - アーティスト (再生時間)</code>／<code>曲名 | アーティスト | URL</code>／URLだけでもOK。再生時間は省略可（未入力の曲は平均3分30秒で計算）。</p>
+
+            <div class="btn-row">
+              <button class="btn primary" id="addPlaylistBtn" type="button">＋ このリストを追加</button>
+              <button class="btn ghost" id="loadSampleBtn" type="button">サンプルで試す</button>
+            </div>
+            <p class="hint">※ ログイン連携を使わない場合の手動登録です。ログインすれば上のカードからプレイリストごと読み込めます。手動の場合は曲のURLや曲名リストを貼ってください。</p>
+          </section>
+
+          <section class="card" aria-labelledby="listH">
+            <h2 id="listH"><span class="dot"></span>登録したプレイリスト</h2>
+            <p class="sub">ミックスに含めるリストを選んでください。</p>
+            <div id="playlistList"></div>
+          </section>
+        </div>
+
+        <!-- RIGHT -->
+        <div>
+          <section class="card" aria-labelledby="mixH">
+            <h2 id="mixH"><span class="dot"></span>ミックス設定</h2>
+            <p class="sub">運転中はアーティストが偏らない「交互ミックス」や「アーティスト分散」がおすすめです。</p>
+
+            <div class="seg" role="group" aria-label="並び順">
+              <button type="button" data-mode="append"><b>そのままつなげる</b><span>リスト順に全部つなぐ</span></button>
+              <button type="button" data-mode="interleave" class="sel"><b>交互ミックス</b><span>各リストから1曲ずつ順番に</span></button>
+              <button type="button" data-mode="spread"><b>アーティスト分散</b><span>同じ歌手が続かないよう並べ替え</span></button>
+              <button type="button" data-mode="shuffle"><b>シャッフル</b><span>全体をランダムに</span></button>
+            </div>
+
+            <div class="switch-row">
+              <div class="txt"><b>重複する曲を取り除く</b><span>同じ動画・同じ「曲名＋アーティスト」は1曲にまとめます</span></div>
+              <button class="switch" id="dedupeSwitch" type="button" role="switch" aria-checked="true" aria-label="重複する曲を取り除く"></button>
+            </div>
+            <div class="switch-row">
+              <div class="txt"><b>各プレイリストを均等に使う</b><span>交互・分散のとき、曲数が多いリストに偏らないよう調整します</span></div>
+              <button class="switch" id="balanceSwitch" type="button" role="switch" aria-checked="false" aria-label="各プレイリストを均等に使う"></button>
+            </div>
+
+            <button class="btn primary big-mix" id="mixBtn" type="button">▶ ミックスを作成する</button>
+          </section>
+
+          <section class="card" aria-labelledby="resultH">
+            <div class="result-head">
+              <div>
+                <h2 id="resultH"><span class="dot"></span>ミックス結果</h2>
+                <p class="sub" id="resultSub" style="margin-bottom:0">まだミックスしていません。リストを選んで、画面下の「ミックスを作成」を押してください。</p>
+              </div>
+              <div class="drive-badge" id="driveBadge" hidden>合計 <b id="driveTime">0:00</b> ・ <span id="driveNote"></span></div>
+            </div>
+
+            <ol class="tracklist" id="resultList"></ol>
+            <div class="notice" id="resultNotice" hidden></div>
+
+            <div class="btn-row">
+              <a class="btn primary" id="openYtBtn" href="#" target="_blank" rel="noopener" hidden>▶ YouTubeで一括再生</a>
+              <button class="btn" id="saveToAccountBtn" type="button" disabled>アカウントにプレイリストとして保存</button>
+              <button class="btn" id="copyBtn" type="button" disabled>リストをコピー</button>
+              <button class="btn" id="dlTxtBtn" type="button" disabled>TXTで保存</button>
+              <button class="btn" id="dlM3uBtn" type="button" disabled>M3Uで保存</button>
+              <button class="btn ghost" id="reshuffleBtn" type="button" disabled>もう一度シャッフル</button>
+            </div>
+            <p class="hint">アカウントへの保存は、曲数が多いと YouTube API の1日の上限に達して途中で止まることがあります（目安：100曲で上限の半分ほど）。長いミックスは「YouTubeで一括再生」が確実です。</p>
+          </section>
+
+          <section class="card" aria-labelledby="codeH">
+            <h2 id="codeH"><span class="dot"></span>コードをダウンロード（HTML / CSS / JS）</h2>
+            <p class="sub">このアプリのコードを、ご希望の3ファイル形式で書き出せます。3つを同じフォルダに置けば、そのままブラウザで開けます。</p>
+            <div class="code-grid">
+              <div class="code-file"><div class="fname">index.html</div><p>画面の骨組み。style.css と script.js を読み込みます。</p><button class="btn small" type="button" data-dl="html">ダウンロード</button></div>
+              <div class="code-file"><div class="fname">style.css</div><p>このページの見た目すべて。</p><button class="btn small" type="button" data-dl="css">ダウンロード</button></div>
+              <div class="code-file"><div class="fname">script.js</div><p>追加・ミックス・書き出しの処理すべて。</p><button class="btn small" type="button" data-dl="js">ダウンロード</button></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <footer>読み込んだプレイリストとミックス結果は、このタブの中だけで扱います（ページを閉じると消えます）。ログインの許可はブラウザと Google の間だけでやり取りされ、このページがパスワードを見ることはありません。YouTube / YouTube Music は Google LLC の商標です。</footer>
+      </div><!-- /#appView -->
+    </div>
+
+    <div class="bottombar" id="bottomBar" role="region" aria-label="ミックス操作" hidden>
+      <div class="bb-info"><b id="bbTime">0:00</b><span id="bbLabel">プレイリストが未選択です</span></div>
+      <button class="btn primary" id="bbMixBtn" type="button">▶ ミックスを作成</button>
+      <a class="btn primary" id="bbPlayBtn" href="#" target="_blank" rel="noopener" hidden>▶ 再生する</a>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script id="appScript">
+(function(){
+  "use strict";
+
+  var PALETTE = ["#e62117","#0e7a55","#1d6fd1","#d97706","#b03a8c","#0e7490","#65a30d","#9333ea"];
+  var AVG_SEC = 210; // 再生時間未入力の曲の平均
+
+  var state = {
+    playlists: [],   // {id,name,color,included,tracks:[{title,artist,videoId,durationSec}]}
+    mode: "interleave",
+    dedupe: true,
+    balance: false,
+    result: []       // mixed tracks with source info
+  };
+  var uid = 0;
+  function nextId(){ return ++uid; }
+
+  /* ---------- YouTube ログイン連携の状態 ---------- */
+  var LS_KEY = "ytmixer_client_id";
+  var READ_SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
+  var WRITE_SCOPE = "https://www.googleapis.com/auth/youtube";
+  var auth = {
+    clientId: "",
+    token: null,        // アクセストークン（メモリ内のみ・保存しない）
+    scope: "",          // 付与済みスコープ
+    tokenClient: null,
+    pending: null,      // ログイン後に実行する処理 {scope, onOk}
+    channelTitle: "",
+    myPlaylists: [],    // APIから取得した一覧 {id,title,count,thumb}
+    importedIds: {}     // 取り込み済みのプレイリストID
+  };
+  function hasWriteScope(){ return auth.scope.indexOf(WRITE_SCOPE) > -1; }
+
+  /* ---------- helpers ---------- */
+  function $(id){ return document.getElementById(id); }
+  function fmt(sec){
+    sec = Math.max(0, Math.round(sec));
+    var h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+    if(h>0) return h + ":" + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+    return m + ":" + String(s).padStart(2,"0");
+  }
+  function fmtLong(sec){
+    var h = Math.floor(sec/3600), m = Math.round((sec%3600)/60);
+    if(h>0) return "約" + h + "時間" + (m? m+"分" : "");
+    return "約" + m + "分";
+  }
+  function trackSec(t){ return t.durationSec || AVG_SEC; }
+  function plSec(pl){ return pl.tracks.reduce(function(a,t){return a+trackSec(t);},0); }
+  function esc(str){
+    return String(str==null?"":str).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function toast(msg){
+    var el = $("toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+  }
+  function download(filename, text, mime){
+    var blob = new Blob([text], {type:(mime||"text/plain") + ";charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 800);
+  }
+
+  /* ---------- parsing ---------- */
+  function extractVideoId(text){
+    if(!text) return null;
+    var m = text.match(/[?&]v=([A-Za-z0-9_-]{11})/) ||
+            text.match(/youtu\.be\/([A-Za-z0-9_-]{11})/) ||
+            text.match(/shorts\/([A-Za-z0-9_-]{11})/) ||
+            text.match(/^([A-Za-z0-9_-]{11})$/);
+    return m ? m[1] : null;
+  }
+  function parseDurationToken(str){
+    // "(4:16)" or "4:16" or "1:02:30"
+    var m = str.match(/\(?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*\)?/);
+    if(!m) return null;
+    if(m[3]!==undefined) return (+m[1])*3600 + (+m[2])*60 + (+m[3]);
+    return (+m[1])*60 + (+m[2]);
+  }
+  function parseLine(line){
+    line = line.trim();
+    if(!line) return null;
+    var videoId = extractVideoId(line);
+    var rest = line
+      .replace(/https?:\/\/\S+/g," ")
+      .replace(/^\s*(?:[-•*]|\d+[.)、])\s*/,"")
+      .trim();
+    var durationSec = null;
+    var dm = rest.match(/\(\s*\d{1,2}:\d{2}(?::\d{2})?\s*\)/);
+    if(dm){ durationSec = parseDurationToken(dm[0]); rest = rest.replace(dm[0]," ").trim(); }
+
+    var title = "", artist = "";
+    if(rest.indexOf("|")>-1){
+      var parts = rest.split("|").map(function(s){return s.trim();}).filter(Boolean);
+      title = parts[0]||""; artist = parts[1]||"";
+      if(!durationSec && parts[2]) durationSec = parseDurationToken(parts[2]);
+    } else if(rest.indexOf(" - ")>-1){
+      var idx = rest.indexOf(" - ");
+      title = rest.slice(0,idx).trim(); artist = rest.slice(idx+3).trim();
+    } else {
+      title = rest;
+    }
+    if(!title && videoId) title = "動画 " + videoId;
+    if(!title) return null;
+    return { title:title, artist:artist, videoId:videoId, durationSec:durationSec };
+  }
+  function parseTracks(text){
+    return text.split(/\r?\n/).map(parseLine).filter(Boolean);
+  }
+
+  /* ---------- samples ---------- */
+  function sampleData(){
+    function T(title,artist,dur){ return {title:title,artist:artist,videoId:null,durationSec:dur}; }
+    return [
+      { name:"米津玄師だけ（サンプル）", tracks:[
+        T("Lemon","米津玄師",256), T("LOSER","米津玄師",244), T("ピースサイン","米津玄師",238),
+        T("灰色と青","米津玄師",294), T("打上花火","DAOKO × 米津玄師",289), T("KICK BACK","米津玄師",193)
+      ]},
+      { name:"あいみょんだけ（サンプル）", tracks:[
+        T("マリーゴールド","あいみょん",321), T("裸の心","あいみょん",267), T("君はロックを聴かない","あいみょん",250),
+        T("ハルノヒ","あいみょん",324), T("愛を伝えたいだとか","あいみょん",245)
+      ]},
+      { name:"夜ドライブ（サンプル）", tracks:[
+        T("Pretender","Official髭男dism",326), T("Subtitle","Official髭男dism",297),
+        T("夜に駆ける","YOASOBI",258), T("ドライフラワー","優里",345), T("Lemon","米津玄師",256)
+      ]}
+    ];
+  }
+
+  /* ---------- rendering: playlists ---------- */
+  function renderPlaylists(){
+    var box = $("playlistList");
+    if(!state.playlists.length){
+      box.innerHTML = '<div class="empty"><b>まだ登録がありません</b>アカウント連携のカードで読み込むか、<br>手動で追加、または「サンプルで試す」で操作感を確かめられます。</div>';
+    } else {
+      box.innerHTML = state.playlists.map(function(pl){
+        var trackRows = pl.tracks.map(function(t,i){
+          return '<li><span class="t">' + esc(t.title) + (t.artist ? ' <span class="a">／ ' + esc(t.artist) + '</span>' : '') + '</span>' +
+                 '<span class="d">' + (t.durationSec ? fmt(t.durationSec) : "—") + '</span>' +
+                 '<button class="icon-btn" type="button" data-del-track="' + pl.id + ':' + i + '" aria-label="この曲を削除" style="width:38px;height:38px;min-height:38px;font-size:12px">✕</button></li>';
+        }).join("");
+        return '<article class="pl-card' + (pl.included ? "" : " off") + '">' +
+          '<div class="pl-head">' +
+            '<span class="pl-color" style="background:' + pl.color + '"></span>' +
+            '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' +
+            '<div class="pl-info">' + pl.tracks.length + ' 曲 ・ 合計 ' + fmt(plSec(pl)) + '</div></div>' +
+            '<div class="pl-actions">' +
+              '<button class="toggle-btn' + (pl.included ? " on" : "") + '" type="button" data-toggle-pl="' + pl.id + '">' + (pl.included ? "含める ✓" : "含めない") + '</button>' +
+              '<button class="icon-btn" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">🗑</button>' +
+            '</div>' +
+          '</div>' +
+          (pl.tracks.length ? '<ul class="pl-tracks">' + trackRows + '</ul>' : '') +
+        '</article>';
+      }).join("");
+    }
+    renderStats();
+  }
+  function selectedPlaylists(){ return state.playlists.filter(function(p){ return p.included && p.tracks.length; }); }
+  function renderStats(){
+    var sel = selectedPlaylists();
+    var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
+    var sec = sel.reduce(function(a,p){return a+plSec(p);},0);
+    $("statPlaylists").textContent = state.playlists.length;
+    $("statTracks").textContent = tracks + " 曲";
+    $("statTime").textContent = fmt(sec);
+    updateBottomBar();
+  }
+  function updateBottomBar(){
+    var bbTime = $("bbTime"), bbLabel = $("bbLabel");
+    if(!bbTime) return;
+    if(state.result.length){
+      bbTime.textContent = fmt(resultSec());
+      bbLabel.textContent = "ミックス結果 " + state.result.length + " 曲";
+      return;
+    }
+    var sel = selectedPlaylists();
+    var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
+    var sec = sel.reduce(function(a,p){return a+plSec(p);},0);
+    bbTime.textContent = fmt(sec);
+    bbLabel.textContent = tracks ? ("選択中 " + tracks + " 曲 ・ " + sel.length + " リスト") : "プレイリストが未選択です";
+  }
+
+  /* ---------- mixing ---------- */
+  function dedupeTracks(list){
+    var seen = {}, out = [];
+    list.forEach(function(t){
+      var key = t.videoId ? "v:" + t.videoId : "t:" + (t.title + "|" + t.artist).toLowerCase().replace(/\s+/g,"");
+      if(!seen[key]){ seen[key] = 1; out.push(t); }
+    });
+    return out;
+  }
+  function shuffleArr(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){ var j = Math.floor(Math.random()*(i+1)); var tmp=a[i]; a[i]=a[j]; a[j]=tmp; }
+    return a;
+  }
+  function withSource(pl){
+    return pl.tracks.map(function(t){
+      return { title:t.title, artist:t.artist, videoId:t.videoId, durationSec:t.durationSec, source:pl.name, color:pl.color };
+    });
+  }
+  function mix(){
+    var pls = selectedPlaylists();
+    if(!pls.length){ toast("ミックスに含めるプレイリストがありません"); return; }
+    var groups = pls.map(withSource);
+    var out = [];
+
+    if(state.mode === "append"){
+      groups.forEach(function(g){ out = out.concat(g); });
+    } else if(state.mode === "shuffle"){
+      groups.forEach(function(g){ out = out.concat(g); });
+      out = shuffleArr(out);
+    } else if(state.mode === "interleave"){
+      var queues = groups.map(function(g){ return state.balance ? g.slice() : g.slice(); });
+      var maxLen = Math.max.apply(null, queues.map(function(q){return q.length;}));
+      if(state.balance){
+        // 均等：短いリストは曲を繰り返さず、比率に合わせて間引いて混ぜる代わりに
+        // ラウンドごとに各リスト1曲ずつ（尽きたら抜ける）＝自然に均等寄りになる
+      }
+      var remain = true, round = 0;
+      while(remain){
+        remain = false;
+        queues.forEach(function(q){ if(round < q.length){ out.push(q[round]); remain = true; } });
+        round++;
+      }
+      void maxLen;
+    } else if(state.mode === "spread"){
+      var pool = [];
+      groups.forEach(function(g){ pool = pool.concat(g); });
+      var result = [], lastArtist = null, lastSource = null;
+      while(pool.length){
+        var pick = -1;
+        for(var i=0;i<pool.length;i++){
+          var a = (pool[i].artist || pool[i].source || "");
+          if(a !== lastArtist && pool[i].source !== lastSource){ pick = i; break; }
+        }
+        if(pick < 0){
+          for(var k=0;k<pool.length;k++){
+            var a2 = (pool[k].artist || pool[k].source || "");
+            if(a2 !== lastArtist){ pick = k; break; }
+          }
+        }
+        if(pick < 0) pick = 0;
+        var chosen = pool.splice(pick,1)[0];
+        result.push(chosen);
+        lastArtist = chosen.artist || chosen.source;
+        lastSource = chosen.source;
+      }
+      out = result;
+    }
+
+    if(state.dedupe) out = dedupeTracks(out);
+    state.result = out;
+    renderResult();
+    toast("ミックスを作成しました（" + out.length + " 曲）");
+    document.getElementById("resultH").scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  /* ---------- rendering: result ---------- */
+  function resultSec(){ return state.result.reduce(function(a,t){return a+trackSec(t);},0); }
+  function renderResult(){
+    var list = $("resultList"), notice = $("resultNotice");
+    var has = state.result.length > 0;
+    $("copyBtn").disabled = !has;
+    $("dlTxtBtn").disabled = !has;
+    $("dlM3uBtn").disabled = !has;
+    $("reshuffleBtn").disabled = !has;
+    $("saveToAccountBtn").disabled = !has;
+
+    if(!has){
+      list.innerHTML = "";
+      notice.hidden = true;
+      $("driveBadge").hidden = true;
+      $("openYtBtn").hidden = true;
+      $("bbPlayBtn").hidden = true;
+      $("bbMixBtn").hidden = false;
+      $("resultSub").textContent = "まだミックスしていません。リストを選んで、画面下の「ミックスを作成」を押してください。";
+      updateBottomBar();
+      return;
+    }
+    var sec = resultSec();
+    $("resultSub").textContent = state.result.length + " 曲 ・ 合計 " + fmt(sec) + "（" + fmtLong(sec) + "）";
+    $("driveBadge").hidden = false;
+    $("driveTime").textContent = fmt(sec);
+    $("driveNote").textContent = sec >= 3600 ? "長距離ドライブにも十分な長さです" : (sec >= 1800 ? "1時間前後のドライブにぴったり" : "短めのお出かけ向けです");
+
+    list.innerHTML = state.result.map(function(t,i){
+      var q = encodeURIComponent((t.title + " " + (t.artist||"")).trim());
+      return '<li>' +
+        '<span class="no">' + (i+1) + '</span>' +
+        '<span class="bar" style="background:' + t.color + '"></span>' +
+        '<div class="tt"><div class="title">' + esc(t.title) + '</div>' +
+        '<div class="artist">' + (t.artist ? esc(t.artist) + " ・ " : "") + '<span class="src">' + esc(t.source) + '</span></div></div>' +
+        '<span class="dur">' + (t.durationSec ? fmt(t.durationSec) : "約3:30") + '</span>' +
+        '<a class="mini-link" href="https://music.youtube.com/search?q=' + q + '" target="_blank" rel="noopener">YT Music ↗</a>' +
+        '<button class="icon-btn" type="button" data-del-result="' + i + '" aria-label="結果から削除">✕</button>' +
+      '</li>';
+    }).join("");
+
+    // 一括再生リンク（動画IDがある曲のみ）
+    var ids = state.result.map(function(t){return t.videoId;}).filter(Boolean);
+    var ytBtn = $("openYtBtn");
+    var bbPlay = $("bbPlayBtn");
+    if(ids.length){
+      ytBtn.hidden = false;
+      ytBtn.href = "https://www.youtube.com/watch_videos?video_ids=" + ids.slice(0,50).join(",");
+      ytBtn.textContent = "▶ YouTubeで一括再生（" + Math.min(ids.length,50) + "曲）";
+      bbPlay.hidden = false;
+      bbPlay.href = ytBtn.href;
+      $("bbMixBtn").hidden = true;
+      notice.hidden = false;
+      notice.textContent = ids.length < state.result.length
+        ? "URLから取り込んだ " + ids.length + " 曲は一括再生リンクに入っています。曲名だけの曲は、各曲の「YT Music ↗」から検索して開けます。" + (ids.length > 50 ? " 一括再生は先頭50曲までです。" : "")
+        : "一括再生リンクは一時プレイリストとして YouTube で開きます（先頭50曲まで）。YouTube Music アプリで開く場合は、各曲の検索リンクも使えます。";
+    } else {
+      ytBtn.hidden = true;
+      bbPlay.hidden = true;
+      $("bbMixBtn").hidden = false;
+      notice.hidden = false;
+      notice.textContent = "曲名のみのリストのため一括再生リンクは作れません。各曲の「YT Music ↗」から開くか、曲のURLを含めて登録し直すと一括再生できるようになります。";
+    }
+    updateBottomBar();
+  }
+
+  function resultAsText(){
+    return state.result.map(function(t,i){
+      return (i+1) + ". " + t.title + (t.artist ? " - " + t.artist : "") + " (" + fmt(trackSec(t)) + ")";
+    }).join("\n");
+  }
+  function resultAsM3u(){
+    var lines = ["#EXTM3U"];
+    state.result.forEach(function(t){
+      lines.push("#EXTINF:" + trackSec(t) + "," + (t.artist ? t.artist + " - " : "") + t.title);
+      lines.push(t.videoId ? "https://music.youtube.com/watch?v=" + t.videoId
+                            : "https://music.youtube.com/search?q=" + encodeURIComponent((t.title + " " + (t.artist||"")).trim()));
+    });
+    return lines.join("\n");
+  }
+
+  /* ---------- YouTube API 連携 ---------- */
+  function gisReady(){
+    return !!(window.google && google.accounts && google.accounts.oauth2);
+  }
+  function setBadge(ok, text){
+    var b = $("acctBadge");
+    b.classList.toggle("ok", !!ok);
+    $("acctBadgeText").textContent = text;
+  }
+  /* ---------- 初回ログイン画面（ゲート）と本体の切り替え ---------- */
+  function enterApp(){
+    $("gateView").hidden = true;
+    $("appView").hidden = false;
+    $("bottomBar").hidden = false;
+    document.body.classList.remove("gate-mode");
+    window.scrollTo(0, 0);
+  }
+  function showGate(){
+    $("gateView").hidden = false;
+    $("appView").hidden = true;
+    $("bottomBar").hidden = true;
+    document.body.classList.add("gate-mode");
+    window.scrollTo(0, 0);
+  }
+  function requestToken(scope, onOk){
+    if(!auth.clientId){ toast("先にクライアントIDを入力してください"); $("clientIdInput").focus(); return; }
+    if(!gisReady()){ toast("Googleログインの読み込み中です。数秒待ってからもう一度押してください"); return; }
+    auth.pending = { scope: scope, onOk: onOk };
+    // スコープごとにクライアントを作り直す（読み取り用／保存用で許可が違うため）
+    auth.tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: auth.clientId,
+      scope: scope,
+      callback: onTokenResponse,
+      error_callback: function(){ auth.pending = null; toast("ログインがキャンセルされたか、失敗しました"); }
+    });
+    auth.tokenClient.requestAccessToken({});
+  }
+  function onTokenResponse(resp){
+    var pending = auth.pending; auth.pending = null;
+    if(!resp || resp.error || !resp.access_token){
+      toast("ログインできませんでした。ブラウザ（Chrome等）で開いているか確認してください");
+      return;
+    }
+    auth.token = resp.access_token;
+    auth.scope = resp.scope || (pending ? pending.scope : READ_SCOPE);
+    setBadge(true, "ログイン中");
+    $("loginArea").hidden = true;
+    $("accountArea").hidden = false;
+    enterApp();
+    if(pending && pending.onOk) pending.onOk();
+    else loadMyPlaylists();
+  }
+  function ensureToken(scope, onOk){
+    var needWrite = scope === WRITE_SCOPE;
+    if(auth.token && (!needWrite || hasWriteScope())){ onOk(); return; }
+    requestToken(scope, onOk);
+  }
+  function apiFetch(path, options){
+    options = options || {};
+    options.headers = Object.assign({}, options.headers || {}, { "Authorization": "Bearer " + auth.token });
+    return fetch("https://www.googleapis.com/youtube/v3/" + path, options).then(function(res){
+      if(res.status === 401){
+        auth.token = null;
+        setBadge(false, "要ログイン");
+        $("accountArea").hidden = true;
+        $("loginArea").hidden = false;
+        throw new Error("ログインの有効期限が切れました。もう一度ログインしてください");
+      }
+      return res.json().then(function(data){
+        if(!res.ok){
+          var msg = (data && data.error && data.error.message) || ("HTTP " + res.status);
+          if(data && data.error && data.error.errors && data.error.errors[0] && data.error.errors[0].reason === "quotaExceeded"){
+            msg = "YouTube API の1日の上限に達しました。明日また試してください";
+          }
+          throw new Error(msg);
+        }
+        return data;
+      });
+    });
+  }
+  function parseIsoDuration(iso){
+    if(!iso) return null;
+    var m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if(!m) return null;
+    return (+(m[1]||0))*3600 + (+(m[2]||0))*60 + (+(m[3]||0));
+  }
+  function loadMyPlaylists(){
+    var wrap = $("ytListWrap");
+    wrap.innerHTML = '<p class="hint"><span class="spin"></span> プレイリストを読み込んでいます…</p>';
+    // チャンネル名（表示用）
+    apiFetch("channels?part=snippet&mine=true").then(function(ch){
+      if(ch.items && ch.items[0]) auth.channelTitle = ch.items[0].snippet.title || "";
+      $("accountInfo").textContent = auth.channelTitle ? ("ログイン中：" + auth.channelTitle + " さんのアカウント") : "ログイン中です";
+    }).catch(function(){ /* 表示用なので失敗しても続行 */ });
+
+    var all = [];
+    function page(token){
+      var q = "playlists?part=snippet,contentDetails&mine=true&maxResults=50" + (token ? "&pageToken=" + encodeURIComponent(token) : "");
+      return apiFetch(q).then(function(data){
+        (data.items || []).forEach(function(it){
+          all.push({
+            id: it.id,
+            title: (it.snippet && it.snippet.title) || "(無題)",
+            count: (it.contentDetails && it.contentDetails.itemCount) || 0,
+            thumb: it.snippet && it.snippet.thumbnails && it.snippet.thumbnails.default ? it.snippet.thumbnails.default.url : ""
+          });
+        });
+        if(data.nextPageToken && all.length < 200) return page(data.nextPageToken);
+        return null;
+      });
+    }
+    page("").then(function(){
+      auth.myPlaylists = all;
+      renderMyPlaylists();
+      if(!all.length) toast("このアカウントにプレイリストが見つかりませんでした");
+    }).catch(function(err){
+      wrap.innerHTML = "";
+      toast(err.message || "プレイリストの読み込みに失敗しました");
+    });
+  }
+  function renderMyPlaylists(){
+    var wrap = $("ytListWrap");
+    if(!auth.myPlaylists.length){
+      wrap.innerHTML = '<p class="hint">プレイリストがありません。YouTube Music アプリでリストを作ると、ここに表示されます。</p>';
+      return;
+    }
+    wrap.innerHTML = '<ul class="yt-list">' + auth.myPlaylists.map(function(p){
+      var done = !!auth.importedIds[p.id];
+      return '<li class="yt-item">' +
+        (p.thumb ? '<img src="' + esc(p.thumb) + '" alt="" loading="lazy" />' : '') +
+        '<div class="ym"><div class="yn">' + esc(p.title) + '</div><div class="yc">' + p.count + ' 曲</div></div>' +
+        '<button class="btn small" type="button" data-import-pl="' + esc(p.id) + '"' + (done ? " disabled" : "") + '>' + (done ? "取込済み ✓" : "取り込む") + '</button>' +
+      '</li>';
+    }).join("") + '</ul>' +
+    '<div class="btn-row"><button class="btn" type="button" id="importAllBtn">すべて取り込む</button></div>';
+    var allBtn = $("importAllBtn");
+    if(allBtn) allBtn.addEventListener("click", function(){
+      var rest = auth.myPlaylists.filter(function(p){ return !auth.importedIds[p.id]; });
+      if(!rest.length){ toast("すべて取り込み済みです"); return; }
+      importSequential(rest, 0);
+    });
+  }
+  function importSequential(list, i){
+    if(i >= list.length){ toast("すべてのプレイリストを取り込みました"); return; }
+    importPlaylist(list[i], function(){ importSequential(list, i + 1); });
+  }
+  function importPlaylist(meta, done){
+    ensureToken(READ_SCOPE, function(){
+      var tracks = [], ids = [];
+      function page(token){
+        var q = "playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=" + encodeURIComponent(meta.id) + (token ? "&pageToken=" + encodeURIComponent(token) : "");
+        return apiFetch(q).then(function(data){
+          (data.items || []).forEach(function(it){
+            var vid = it.contentDetails && it.contentDetails.videoId;
+            var sn = it.snippet || {};
+            if(!vid) return;
+            if(sn.title === "Deleted video" || sn.title === "Private video") return;
+            tracks.push({ title: sn.title || ("動画 " + vid), artist: sn.videoOwnerChannelTitle || "", videoId: vid, durationSec: null });
+            ids.push(vid);
+          });
+          if(data.nextPageToken) return page(data.nextPageToken);
+          return null;
+        });
+      }
+      page("").then(function(){
+        // 再生時間をまとめて取得（50件ずつ）
+        var chunks = [];
+        for(var i = 0; i < ids.length; i += 50) chunks.push(ids.slice(i, i + 50));
+        var chain = Promise.resolve();
+        chunks.forEach(function(chunk){
+          chain = chain.then(function(){
+            return apiFetch("videos?part=contentDetails&id=" + chunk.join(",")).then(function(vd){
+              var map = {};
+              (vd.items || []).forEach(function(v){ map[v.id] = parseIsoDuration(v.contentDetails && v.contentDetails.duration); });
+              tracks.forEach(function(t){ if(map[t.videoId]) t.durationSec = map[t.videoId]; });
+            }).catch(function(){ /* 時間が取れなくても取り込みは続行 */ });
+          });
+        });
+        return chain;
+      }).then(function(){
+        if(!tracks.length){ toast("「" + meta.title + "」に取り込める曲がありませんでした"); if(done) done(); return; }
+        state.playlists.push({
+          id: nextId(), name: meta.title, included: true,
+          color: PALETTE[state.playlists.length % PALETTE.length], tracks: tracks
+        });
+        auth.importedIds[meta.id] = true;
+        renderPlaylists();
+        renderMyPlaylists();
+        toast("「" + meta.title + "」を取り込みました（" + tracks.length + " 曲）");
+        if(done) done();
+      }).catch(function(err){
+        toast(err.message || "取り込みに失敗しました");
+        if(done) done();
+      });
+    });
+  }
+  function saveResultToAccount(){
+    var withId = state.result.filter(function(t){ return t.videoId; });
+    if(!withId.length){ toast("動画URLのある曲がないため、アカウントに保存できません"); return; }
+    ensureToken(WRITE_SCOPE, function(){
+      var btn = $("saveToAccountBtn");
+      btn.disabled = true;
+      var title = "ミックス " + new Date().toLocaleDateString("ja-JP") + "（" + withId.length + "曲）";
+      apiFetch("playlists?part=snippet,status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ snippet: { title: title }, status: { privacyStatus: "private" } })
+      }).then(function(created){
+        var plId = created.id;
+        var i = 0;
+        function next(){
+          if(i >= withId.length){
+            btn.disabled = false;
+            btn.textContent = "アカウントにプレイリストとして保存";
+            toast("アカウントに保存しました：「" + title + "」");
+            return;
+          }
+          var t = withId[i];
+          btn.textContent = "保存中… " + (i + 1) + " / " + withId.length + " 曲";
+          apiFetch("playlistItems?part=snippet", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ snippet: { playlistId: plId, resourceId: { kind: "youtube#video", videoId: t.videoId } } })
+          }).then(function(){ i++; next(); }, function(err){
+            btn.disabled = false;
+            btn.textContent = "アカウントにプレイリストとして保存";
+            toast("途中で止まりました（" + i + " 曲まで保存済み）：" + (err.message || ""));
+          });
+        }
+        next();
+      }).catch(function(err){
+        btn.disabled = false;
+        btn.textContent = "アカウントにプレイリストとして保存";
+        toast(err.message || "保存に失敗しました");
+      });
+    });
+  }
+
+  /* ---------- code download (3 files) ---------- */
+  function standaloneHtml(){
+    return "<!doctype html>\n<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\" />\n" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n" +
+      "<title>YT Music Playlist Mixer</title>\n<link rel=\"stylesheet\" href=\"style.css\" />\n<script src=\"https://accounts.google.com/gsi/client\" async defer><\/script>\n</head>\n<body>\n" +
+      document.body.innerHTML
+        .replace(/<script[\s\S]*?<\/script>/g,"")
+        .replace('id="appView" hidden','id="appView"')
+        .replace('id="bottomBar" role="region" aria-label="ミックス操作" hidden','id="bottomBar" role="region" aria-label="ミックス操作"')
+        .replace(/<div class="toast"[\s\S]*?<\/div>\s*$/,"<div class=\"toast\" id=\"toast\" role=\"status\"></div>") +
+      "\n<script src=\"script.js\"><\/script>\n</body>\n</html>";
+  }
+  function pageCss(){
+    var styles = document.querySelectorAll("style");
+    var out = "";
+    styles.forEach(function(s){ out += s.textContent + "\n"; });
+    return out.trim();
+  }
+  function pageJs(){ return document.getElementById("appScript").textContent.trim(); }
+
+  /* ---------- events ---------- */
+  $("addPlaylistBtn").addEventListener("click", function(){
+    var name = $("plName").value.trim();
+    var tracks = parseTracks($("plTracks").value);
+    if(!tracks.length){ toast("曲を1曲以上入力してください（URLだけでもOK）"); return; }
+    if(!name) name = "プレイリスト " + (state.playlists.length + 1);
+    state.playlists.push({
+      id: nextId(), name: name, included: true,
+      color: PALETTE[state.playlists.length % PALETTE.length], tracks: tracks
+    });
+    $("plName").value = ""; $("plTracks").value = "";
+    renderPlaylists();
+    toast("「" + name + "」を追加しました（" + tracks.length + " 曲）");
+  });
+
+  $("loadSampleBtn").addEventListener("click", function(){
+    sampleData().forEach(function(s){
+      state.playlists.push({
+        id: nextId(), name: s.name, included: true,
+        color: PALETTE[state.playlists.length % PALETTE.length], tracks: s.tracks
+      });
+    });
+    renderPlaylists();
+    toast("サンプルを3つ追加しました。そのままミックスできます");
+  });
+
+  document.querySelectorAll(".seg button").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".seg button").forEach(function(b){ b.classList.remove("sel"); });
+      btn.classList.add("sel");
+      state.mode = btn.getAttribute("data-mode");
+    });
+  });
+
+  function bindSwitch(id, key){
+    $(id).addEventListener("click", function(){
+      var now = $(id).getAttribute("aria-checked") === "true";
+      $(id).setAttribute("aria-checked", String(!now));
+      state[key] = !now;
+    });
+  }
+  bindSwitch("dedupeSwitch","dedupe");
+  bindSwitch("balanceSwitch","balance");
+
+  $("mixBtn").addEventListener("click", mix);
+  $("bbMixBtn").addEventListener("click", mix);
+  $("saveToAccountBtn").addEventListener("click", saveResultToAccount);
+
+  /* ---------- ログインまわりのイベント ---------- */
+  function syncClientId(value, exceptEl){
+    auth.clientId = value;
+    [$("clientIdInput"), $("gateClientIdInput")].forEach(function(el){
+      if(el && el !== exceptEl) el.value = value;
+    });
+    try{ localStorage.setItem(LS_KEY, value); }catch(e){ /* 保存できなくても動作は続行 */ }
+  }
+  function startLogin(inputEl){
+    var v = inputEl.value.trim();
+    if(!v){ toast("クライアントIDを入力してください（下の「作り方」参照）"); inputEl.focus(); return; }
+    if(!/\.apps\.googleusercontent\.com$/.test(v)){ toast("クライアントIDの形式が違うようです（末尾は .apps.googleusercontent.com）"); inputEl.focus(); return; }
+    syncClientId(v, inputEl);
+    requestToken(READ_SCOPE, loadMyPlaylists);
+  }
+  try{ auth.clientId = localStorage.getItem(LS_KEY) || ""; }catch(e){ auth.clientId = ""; }
+  if(auth.clientId){ $("clientIdInput").value = auth.clientId; $("gateClientIdInput").value = auth.clientId; }
+  $("clientIdInput").addEventListener("change", function(){ syncClientId($("clientIdInput").value.trim(), $("clientIdInput")); });
+  $("gateClientIdInput").addEventListener("change", function(){ syncClientId($("gateClientIdInput").value.trim(), $("gateClientIdInput")); });
+  $("loginBtn").addEventListener("click", function(){ startLogin($("clientIdInput")); });
+  $("gateLoginBtn").addEventListener("click", function(){ startLogin($("gateClientIdInput")); });
+  $("guestBtn").addEventListener("click", function(){
+    enterApp();
+    toast("ログインせずに使えます。曲は「プレイリストを追加」から手で貼ってください");
+  });
+  $("logoutBtn").addEventListener("click", function(){
+    if(auth.token && window.google && google.accounts && google.accounts.oauth2){
+      google.accounts.oauth2.revoke(auth.token, function(){});
+    }
+    auth.token = null; auth.scope = ""; auth.myPlaylists = []; auth.importedIds = {}; auth.channelTitle = "";
+    setBadge(false, "未ログイン");
+    $("accountArea").hidden = true;
+    $("loginArea").hidden = false;
+    $("ytListWrap").innerHTML = "";
+    showGate();
+    toast("ログアウトしました");
+  });
+  $("reloadPlBtn").addEventListener("click", function(){ ensureToken(READ_SCOPE, loadMyPlaylists); });
+  $("reshuffleBtn").addEventListener("click", function(){
+    state.result = shuffleArr(state.result);
+    renderResult(); toast("結果をシャッフルしました");
+  });
+  $("copyBtn").addEventListener("click", function(){
+    var text = resultAsText();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ toast("リストをコピーしました"); }, function(){ toast("コピーできませんでした"); });
+    } else { toast("このブラウザではコピーに対応していません"); }
+  });
+  $("dlTxtBtn").addEventListener("click", function(){ download("mixed-playlist.txt", resultAsText()); });
+  $("dlM3uBtn").addEventListener("click", function(){ download("mixed-playlist.m3u", resultAsM3u()); });
+
+  document.querySelectorAll("[data-dl]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var kind = btn.getAttribute("data-dl");
+      if(kind === "html") download("index.html", standaloneHtml(), "text/html");
+      if(kind === "css") download("style.css", pageCss(), "text/css");
+      if(kind === "js") download("script.js", pageJs(), "text/javascript");
+      toast("ダウンロードしました");
+    });
+  });
+
+  // delegation for dynamic buttons
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("[data-toggle-pl],[data-del-pl],[data-del-track],[data-del-result],[data-import-pl]") : null;
+    if(!t) return;
+    if(t.hasAttribute("data-import-pl")){
+      var pid = t.getAttribute("data-import-pl");
+      var meta = auth.myPlaylists.find(function(p){ return p.id === pid; });
+      if(meta && !auth.importedIds[pid]){ t.disabled = true; t.textContent = "取込中…"; importPlaylist(meta); }
+    }
+    if(t.hasAttribute("data-toggle-pl")){
+      var id1 = +t.getAttribute("data-toggle-pl");
+      state.playlists.forEach(function(p){ if(p.id===id1) p.included = !p.included; });
+      renderPlaylists();
+    }
+    if(t.hasAttribute("data-del-pl")){
+      var id2 = +t.getAttribute("data-del-pl");
+      state.playlists = state.playlists.filter(function(p){ return p.id!==id2; });
+      renderPlaylists(); toast("プレイリストを削除しました");
+    }
+    if(t.hasAttribute("data-del-track")){
+      var parts = t.getAttribute("data-del-track").split(":");
+      var pl = state.playlists.find(function(p){ return p.id === +parts[0]; });
+      if(pl){ pl.tracks.splice(+parts[1],1); renderPlaylists(); }
+    }
+    if(t.hasAttribute("data-del-result")){
+      state.result.splice(+t.getAttribute("data-del-result"),1);
+      renderResult();
+    }
+  });
+
+  /* ---------- 「承認済みの JavaScript 生成元」に入れるURLを表示 ---------- */
+  var currentOrigin = "";
+  try{ currentOrigin = window.location.origin || ""; }catch(e){ currentOrigin = ""; }
+  if(!currentOrigin || currentOrigin === "null"){
+    try{ currentOrigin = window.location.protocol + "//" + window.location.host; }catch(e){ currentOrigin = ""; }
+  }
+  document.querySelectorAll(".js-origin-value").forEach(function(el){
+    el.textContent = (currentOrigin && currentOrigin.indexOf("http") === 0)
+      ? currentOrigin
+      : "この画面では表示できません。Chromeでこのページを開き直すと、ここにURLが出ます";
+  });
+  document.querySelectorAll(".js-origin-copy").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      if(!currentOrigin || currentOrigin.indexOf("http") !== 0){ toast("URLを表示できませんでした。Chromeで開き直してください"); return; }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(currentOrigin).then(
+          function(){ toast("コピーしました。そのまま Google Cloud の「URI を追加」に貼ってください"); },
+          function(){ toast("コピーできませんでした。枠のURLを長押しでコピーしてください"); }
+        );
+      } else { toast("枠のURLを長押しでコピーしてください"); }
+    });
+  });
+
+  renderPlaylists();
+  renderResult();
+})();
+    </script>
+  </body>
+</html>
