@@ -84,7 +84,20 @@
       }
       h1 .accent{color:var(--red)}
       .hero p.lead{margin:3px 0 0;max-width:720px;color:var(--muted);font-size:12.5px;line-height:1.5}
-      .hero-stats{display:inline-flex;gap:4px;flex-wrap:wrap;margin:0 0 0 auto;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+      .hero-stats{display:inline-flex;gap:4px;flex-wrap:wrap;margin:8px 0 0;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+      /* ヘッダー右上：ログイン状態＋設定（歯車） */
+      .header-actions{margin-left:auto;display:flex;align-items:center;gap:7px;flex:none}
+      .header-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:800;background:var(--surface);border:1px solid var(--line);color:var(--muted);white-space:nowrap;line-height:1.3}
+      .header-badge .st-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+      .header-badge.ok{color:var(--ink)}
+      .header-badge.ok .st-dot{background:var(--green)}
+      .gear-btn{width:34px;height:34px;min-height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none}
+      .gear-btn svg{width:19px;height:19px;display:block}
+      .gear-btn[aria-expanded="true"]{color:var(--red);border-color:var(--red)}
+      .settings-panel{margin-top:10px;padding:14px 16px}
+      .settings-panel h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+      .settings-panel h2 .dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:none}
+      .settings-panel .sub{margin:0 0 6px;font-size:12.5px;color:var(--muted)}
       .stat{background:transparent;border:0;border-radius:0;padding:0;min-width:0;display:inline-flex;align-items:baseline;gap:4px}
       .stat + .stat::before{content:"・";color:var(--muted);font-size:11px;margin-right:2px}
       .stat b{display:inline;font-family:"Archivo",sans-serif;font-size:13.5px;line-height:1.2}
@@ -168,42 +181,47 @@
       .btn:disabled{opacity:.45;cursor:not-allowed}
       .btn-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
 
-      /* playlist cards — 左サムネイル／中央情報／右ボタン の大きなカード */
+      /* playlist cards — 縦長カードを1行に3つ並べるグリッド（上：サムネイル／下：名前と曲数） */
+      #playlistList{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
+      #playlistList .empty{grid-column:1/-1}
       .pl-card{
         --pl:var(--line);
-        border:1.5px solid var(--line);border-radius:16px;
-        padding:12px;margin-bottom:12px;background:var(--bg);
+        border:1.5px solid var(--line);border-radius:14px;
+        padding:8px;background:var(--bg);cursor:pointer;
         overflow:hidden;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,opacity .18s ease;
       }
-      .pl-card.off{opacity:.68;filter:saturate(.5)}
+      .pl-card.off{opacity:.62;filter:saturate(.45)}
       .pl-card.on{
         opacity:1;filter:none;
         border-color:var(--pl);
-        background:color-mix(in srgb, var(--pl) 9%, var(--surface));
+        background:color-mix(in srgb, var(--pl) 10%, var(--surface));
         box-shadow:0 4px 16px color-mix(in srgb, var(--pl) 24%, transparent);
       }
       .pl-strip{display:none}
-      .pl-main{display:flex;align-items:center;gap:13px}
-      .pl-head{display:flex;align-items:center;gap:13px;cursor:pointer;flex:1;min-width:0}
       .pl-check{
-        width:26px;height:26px;border-radius:50%;flex:none;
-        border:2px solid var(--line);background:var(--surface);color:#fff;
-        display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;line-height:1;
+        width:24px;height:24px;border-radius:50%;flex:none;
+        border:2px solid rgba(255,255,255,.9);background:rgba(0,0,0,.35);color:#fff;
+        display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;line-height:1;
       }
-      .pl-card.on .pl-check{background:var(--pl);border-color:var(--pl)}
-      .pl-meta{flex:1;min-width:0}
-      .pl-name{font-weight:900;font-size:16.5px;line-height:1.35;overflow-wrap:anywhere}
-      .pl-info{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px}
-      .pl-badge{font-size:11px;font-weight:900;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--muted)}
+      .pl-card.on .pl-check{background:var(--pl);border-color:#fff}
+      .pl-meta{min-width:0;padding:7px 2px 1px}
+      .pl-name{font-weight:900;font-size:13.5px;line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
+      .pl-info{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px}
+      .pl-badge{font-size:10px;font-weight:900;border-radius:999px;padding:1px 7px;background:var(--surface-2);color:var(--muted)}
       .pl-card.on .pl-badge{background:var(--pl);color:#fff}
-      .pl-thumb-wrap{position:relative;flex:none;width:96px;height:96px}
-      .pl-thumb{width:96px;height:96px;border-radius:12px;object-fit:cover;display:block;background:var(--surface-2)}
+      .pl-thumb-wrap{position:relative;display:block;width:100%;aspect-ratio:1/1}
+      .pl-thumb{width:100%;height:100%;border-radius:9px;object-fit:cover;display:block;background:var(--surface-2)}
       .pl-thumb-ph{display:flex;align-items:center;justify-content:center;background:var(--pl);color:#fff;font-size:34px}
-      .pl-thumb-wrap .pl-check{position:absolute;right:-6px;bottom:-6px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
-      .pl-stats{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:4px}
-      .pl-stat{font-size:13px;color:var(--muted)}
-      .pl-stat b{font-family:"Archivo",sans-serif;font-size:22px;font-weight:800;color:var(--ink);margin-right:2px}
-      .pl-stat small{font-size:12px;color:var(--muted)}
+      .pl-thumb-wrap .pl-check{position:absolute;right:5px;bottom:5px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+      .pl-del-overlay{
+        position:absolute;top:5px;right:5px;width:28px;height:28px;min-height:28px;border-radius:50%;
+        border:0;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;font-size:12px;line-height:1;
+        display:flex;align-items:center;justify-content:center;padding:0;z-index:2;
+      }
+      .pl-stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px}
+      .pl-stat{font-size:12px;color:var(--muted)}
+      .pl-stat b{font-family:"Archivo",sans-serif;font-size:19px;font-weight:800;color:var(--ink);margin-right:2px}
+      .pl-stat small{font-size:11.5px;color:var(--muted)}
       .rec{display:inline-block;background:var(--red);color:#fff;font-size:10.5px;font-weight:900;border-radius:999px;padding:1px 8px;vertical-align:2px}
       @keyframes nudgeX{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
       .nudge .pl-card{animation:nudgeX .3s ease 2}
@@ -281,15 +299,16 @@
       }
       .origin-box .btn{width:100%;margin-top:9px}
       .origin-box .onote{display:block;font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.55}
-      .yt-list{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:10px}
-      .yt-item{display:flex;gap:13px;align-items:center;padding:12px;border:1.5px solid var(--line);border-radius:16px;background:var(--bg)}
-      .yt-item.done{border-color:var(--green);background:color-mix(in srgb, var(--green) 8%, var(--surface))}
-      .yt-item img{width:96px;height:96px;object-fit:cover;border-radius:12px;flex:none;background:var(--surface-2)}
-      .yt-item .ym{flex:1;min-width:0}
-      .yt-item .yn{font-weight:900;font-size:16.5px;overflow-wrap:anywhere;line-height:1.35}
-      .yt-item .yc{font-size:13px;color:var(--muted);margin-top:4px}
-      .yt-item .yc b{font-family:"Archivo",sans-serif;font-size:20px;color:var(--ink);margin-right:2px}
-      .yt-item .import-btn{flex:none;min-width:92px;min-height:58px;border-radius:12px;font-size:14px;font-weight:900;padding:10px 14px}
+      .yt-list{margin:10px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
+      .yt-item{display:flex;flex-direction:column;padding:8px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);cursor:pointer}
+      .yt-item.done{border-color:var(--green);background:color-mix(in srgb, var(--green) 8%, var(--surface));cursor:default}
+      .yt-item img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px;background:var(--surface-2);display:block}
+      .yt-thumb-ph{width:100%;aspect-ratio:1/1;border-radius:9px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:30px}
+      .yt-item .ym{min-width:0;padding:7px 2px 0}
+      .yt-item .yn{font-weight:900;font-size:13.5px;overflow-wrap:anywhere;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
+      .yt-item .yc{font-size:12px;color:var(--muted);margin-top:2px}
+      .yt-item .yc b{font-family:"Archivo",sans-serif;font-size:17px;color:var(--ink);margin-right:2px}
+      .yt-item .import-btn{width:100%;min-width:0;min-height:40px;border-radius:9px;font-size:12.5px;font-weight:900;padding:6px 8px;margin-top:8px}
       .yt-item.done .import-btn{background:var(--surface-2);color:var(--muted)}
       .spin{
         width:16px;height:16px;border-radius:50%;flex:none;
@@ -375,11 +394,10 @@
         .code-grid{grid-template-columns:1fr}
         .card{padding:16px 14px}
         .hero{padding:10px 0 2px}
-        .pl-main{gap:10px}
-        .pl-thumb-wrap,.pl-thumb{width:80px;height:80px}
-        .yt-item img{width:80px;height:80px}
-        .toggle-btn,.yt-item .import-btn{min-width:80px;min-height:54px;font-size:13px;padding:8px 10px}
-        .pl-name,.yt-item .yn{font-size:15.5px}
+        #playlistList,.yt-list{gap:8px}
+        .pl-card,.yt-item{padding:6px}
+        .pl-name,.yt-item .yn{font-size:12.5px}
+        .header-badge{font-size:10.5px;padding:4px 8px}
         input[type="text"],textarea,select{font-size:16px} /* iOSの自動ズーム防止 */
       }
       @media (min-width:640px) and (max-width:1023px){
@@ -429,13 +447,30 @@
             <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff"/></svg>
           </div>
           <h1>Playlist <span class="accent">Mixer</span></h1>
-          <div class="hero-stats" aria-label="現在の集計">
-            <div class="stat"><b id="statPlaylists">0</b><span>登録</span></div>
-            <div class="stat"><b id="statTracks">0 曲</b><span>選択中</span></div>
-            <div class="stat"><b id="statTime">0:00</b><span>合計</span></div>
+          <div class="header-actions">
+            <span class="header-badge" id="headerBadge"><span class="st-dot"></span><span id="headerBadgeText">未ログイン</span></span>
+            <button class="gear-btn" id="settingsBtn" type="button" aria-label="設定を開く" aria-expanded="false" aria-controls="settingsPanel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
           </div>
         </div>
+        <div class="hero-stats" aria-label="現在の集計">
+          <div class="stat"><b id="statPlaylists">0</b><span>登録</span></div>
+          <div class="stat"><b id="statTracks">0 曲</b><span>選択中</span></div>
+          <div class="stat"><b id="statTime">0:00</b><span>合計</span></div>
+        </div>
       </header>
+
+      <section class="card settings-panel" id="settingsPanel" hidden aria-labelledby="settingsH">
+        <h2 id="settingsH"><span class="dot"></span>設定</h2>
+        <p class="sub">YouTube連携の設定です。通常は触らなくて大丈夫です。</p>
+        <label class="f" for="settingsClientIdInput">クライアントID</label>
+        <input type="text" id="settingsClientIdInput" placeholder="クライアントID（初回のみ）" autocomplete="off" autocapitalize="none" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn" id="settingsReloadBtn" type="button">↻ プレイリストを再読み込み</button>
+          <button class="btn ghost" id="settingsLogoutBtn" type="button">ログアウト</button>
+        </div>
+      </section>
 
       <nav class="steps-nav" id="stepsNav" aria-label="進み方">
         <button class="step-tab is-active" type="button" data-goto-step="1">1 選ぶ</button>
@@ -742,20 +777,14 @@
         var thumbHtml = thumb
           ? '<img class="pl-thumb" src="' + esc(thumb) + '" alt="" loading="lazy" />'
           : '<span class="pl-thumb pl-thumb-ph" aria-hidden="true">♪</span>';
-        return '<article class="pl-card ' + (pl.included ? "on" : "off") + '" style="--pl:' + pl.color + '" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
-          '<div class="pl-main">' +
-            '<div class="pl-head" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除">' +
-              '<span class="pl-thumb-wrap">' + thumbHtml + '<span class="pl-check" aria-hidden="true">' + (pl.included ? "✓" : "") + '</span></span>' +
-              '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' +
-              '<div class="pl-stats"><span class="pl-stat"><b>' + pl.tracks.length + '</b><small>曲</small></span><span class="pl-stat"><b>' + fmtLong(plSec(pl)) + '</b></span></div>' +
-              '<div class="pl-info"><span class="pl-badge">' + (pl.included ? "選択中" : "未選択") + '</span><span>合計 ' + fmt(plSec(pl)) + '</span></div></div>' +
-            '</div>' +
-            '<div class="pl-actions">' +
-              '<button class="toggle-btn' + (pl.included ? " on" : "") + '" type="button" data-toggle-pl="' + pl.id + '">' + (pl.included ? "選択中 ✓" : "選ぶ") + '</button>' +
-              '<button class="icon-btn pl-del" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">🗑</button>' +
-            '</div>' +
-          '</div>' +
-          (pl.tracks.length ? '<details class="pl-tracks-wrap"><summary style="cursor:pointer;font-size:12.5px;font-weight:700;color:var(--muted);padding:8px 0 2px;list-style:none">曲の一覧を見る（' + pl.tracks.length + '曲） ▾</summary><ul class="pl-tracks">' + trackRows + '</ul></details>' : '') +
+        return '<article class="pl-card ' + (pl.included ? "on" : "off") + '" style="--pl:' + pl.color + '" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
+          '<span class="pl-thumb-wrap">' + thumbHtml +
+            '<button class="pl-del-overlay" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">✕</button>' +
+            '<span class="pl-check" aria-hidden="true">' + (pl.included ? "✓" : "") + '</span></span>' +
+          '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' +
+          '<div class="pl-stats"><span class="pl-stat"><b>' + pl.tracks.length + '</b><small>曲</small></span><span class="pl-stat">' + fmtLong(plSec(pl)) + '</span></div>' +
+          '<div class="pl-info"><span class="pl-badge">' + (pl.included ? "選択中" : "未選択") + '</span><span>' + fmt(plSec(pl)) + '</span></div></div>' +
+          (pl.tracks.length ? '<details class="pl-tracks-wrap"><summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:var(--muted);padding:6px 0 2px;list-style:none">曲一覧 ▾</summary><ul class="pl-tracks">' + trackRows + '</ul></details>' : '') +
         '</article>';
       }).join("");
     }
@@ -997,6 +1026,11 @@
     var b = $("acctBadge");
     b.classList.toggle("ok", !!ok);
     $("acctBadgeText").textContent = text;
+    var hb = $("headerBadge");
+    if(hb){
+      hb.classList.toggle("ok", !!ok);
+      $("headerBadgeText").textContent = ok ? "YouTube ログイン中" : text;
+    }
   }
   /* ---------- 初回ログイン画面（ゲート）と本体の切り替え ---------- */
   function enterApp(){
@@ -1093,7 +1127,7 @@
             id: it.id,
             title: (it.snippet && it.snippet.title) || "(無題)",
             count: (it.contentDetails && it.contentDetails.itemCount) || 0,
-            thumb: it.snippet && it.snippet.thumbnails && it.snippet.thumbnails.default ? it.snippet.thumbnails.default.url : ""
+            thumb: (function(th){ if(!th) return ""; var t = th.medium || th.high || th.default; return t ? t.url : ""; })(it.snippet && it.snippet.thumbnails)
           });
         });
         if(data.nextPageToken && all.length < 200) return page(data.nextPageToken);
@@ -1117,8 +1151,8 @@
     }
     wrap.innerHTML = '<ul class="yt-list">' + auth.myPlaylists.map(function(p){
       var done = !!auth.importedIds[p.id];
-      var thumbHtml = p.thumb ? '<img src="' + esc(p.thumb) + '" alt="" loading="lazy" />' : '<span style="width:96px;height:96px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:30px;flex:none" aria-hidden="true">♪</span>';
-      return '<li class="yt-item' + (done ? " done" : "") + '">' +
+      var thumbHtml = p.thumb ? '<img src="' + esc(p.thumb) + '" alt="" loading="lazy" />' : '<span class="yt-thumb-ph" aria-hidden="true">♪</span>';
+      return '<li class="yt-item' + (done ? " done" : "") + '"' + (done ? "" : ' data-import-pl="' + esc(p.id) + '" title="タップで取り込む"') + '>' +
         thumbHtml +
         '<div class="ym"><div class="yn">' + esc(p.title) + '</div><div class="yc"><b>' + p.count + '</b>曲' + (done ? ' ・ 取込済み' : '') + '</div></div>' +
         '<button class="btn import-btn' + (done ? "" : " primary") + '" type="button" data-import-pl="' + esc(p.id) + '"' + (done ? " disabled" : "") + '>' + (done ? "取込済み ✓" : "取り込む") + '</button>' +
@@ -1289,7 +1323,7 @@
   /* ---------- ログインまわりのイベント ---------- */
   function syncClientId(value, exceptEl){
     auth.clientId = value;
-    [$("clientIdInput"), $("gateClientIdInput")].forEach(function(el){
+    [$("clientIdInput"), $("gateClientIdInput"), $("settingsClientIdInput")].forEach(function(el){
       if(el && el !== exceptEl) el.value = value;
     });
     try{ localStorage.setItem(LS_KEY, value); }catch(e){ /* 保存できなくても動作は続行 */ }
@@ -1302,12 +1336,24 @@
     requestToken(READ_SCOPE, loadMyPlaylists);
   }
   try{ auth.clientId = localStorage.getItem(LS_KEY) || ""; }catch(e){ auth.clientId = ""; }
-  if(auth.clientId){ $("clientIdInput").value = auth.clientId; $("gateClientIdInput").value = auth.clientId; }
+  if(auth.clientId){ $("clientIdInput").value = auth.clientId; $("gateClientIdInput").value = auth.clientId; $("settingsClientIdInput").value = auth.clientId; }
   $("clientIdInput").addEventListener("change", function(){ syncClientId($("clientIdInput").value.trim(), $("clientIdInput")); });
   $("gateClientIdInput").addEventListener("change", function(){ syncClientId($("gateClientIdInput").value.trim(), $("gateClientIdInput")); });
+  $("settingsClientIdInput").addEventListener("change", function(){ syncClientId($("settingsClientIdInput").value.trim(), $("settingsClientIdInput")); });
+  /* ヘッダーの歯車：設定パネルの開閉 */
+  $("settingsBtn").addEventListener("click", function(){
+    var panel = $("settingsPanel");
+    var open = panel.hidden;
+    panel.hidden = !open;
+    $("settingsBtn").setAttribute("aria-expanded", String(open));
+    if(open) window.scrollTo(0, 0);
+  });
+  $("settingsReloadBtn").addEventListener("click", function(){ ensureToken(READ_SCOPE, loadMyPlaylists); });
+  $("settingsLogoutBtn").addEventListener("click", function(){ $("logoutBtn").click(); });
   $("loginBtn").addEventListener("click", function(){ startLogin($("clientIdInput")); });
   $("gateLoginBtn").addEventListener("click", function(){ startLogin($("gateClientIdInput")); });
   $("guestBtn").addEventListener("click", function(){
+    setBadge(false, "ゲスト利用中");
     enterApp();
     toast("ログインせずに使えます。曲は「プレイリストを追加」から手で貼ってください");
   });
@@ -1343,9 +1389,10 @@
     if(t.hasAttribute("data-import-pl")){
       var pid = t.getAttribute("data-import-pl");
       var meta = auth.myPlaylists.find(function(p){ return p.id === pid; });
-      if(meta && !auth.importedIds[pid]){ t.disabled = true; t.textContent = "取込中…"; importPlaylist(meta); }
+      if(meta && !auth.importedIds[pid]){ if(t.tagName === "BUTTON"){ t.disabled = true; t.textContent = "取込中…"; } importPlaylist(meta); }
     }
     if(t.hasAttribute("data-toggle-pl")){
+      if(e.target.closest && e.target.closest(".pl-tracks-wrap") && !e.target.closest("[data-del-track]")) return;
       var id1 = +t.getAttribute("data-toggle-pl");
       state.playlists.forEach(function(p){ if(p.id===id1) p.included = !p.included; });
       persistSelection();
