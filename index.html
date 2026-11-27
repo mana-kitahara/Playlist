@@ -405,6 +405,30 @@
       }
       .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+      /* サイト内プレイヤー */
+      .player-section{margin-top:14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg);padding:14px}
+      .player-frame-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+      .player-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+      .player-frame-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;text-align:center;padding:16px}
+      .now-playing{margin-top:14px;text-align:center}
+      .now-playing-pos{font-size:12.5px;font-weight:800;color:var(--red);letter-spacing:.02em}
+      .now-playing-title{font-size:17px;font-weight:900;line-height:1.45;margin-top:2px;overflow-wrap:anywhere}
+      .now-playing-artist{font-size:12.5px;color:var(--muted)}
+      .player-controls{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px}
+      .player-btn{width:60px;height:60px;min-width:60px;min-height:60px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:20px;padding:0}
+      .player-btn:disabled{opacity:.35;cursor:not-allowed}
+      .player-btn.main{width:84px;height:84px;min-width:84px;min-height:84px;background:var(--red);border-color:var(--red);color:#fff;font-size:30px;box-shadow:0 8px 22px color-mix(in srgb, var(--red) 38%, transparent)}
+      .player-btn.main:active{transform:scale(.96)}
+      .player-note{margin-top:12px;font-size:12.5px;color:var(--muted);text-align:center;line-height:1.6}
+      .player-note b{color:var(--ink-2)}
+      .tracklist li.is-playing{background:var(--red-soft);border-radius:10px;padding-left:8px;padding-right:8px}
+      .tracklist li.is-playing .title{color:var(--red)}
+      .tracklist li.is-playing .no{color:var(--red)}
+      .tracklist li.is-unplayable{opacity:.62}
+      .unplayable-badge{display:inline-block;margin-top:3px;font-size:11px;font-weight:800;background:var(--surface-2);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+      .playing-badge{display:inline-block;margin-top:3px;font-size:11px;font-weight:800;background:var(--red);color:#fff;border-radius:999px;padding:1px 8px}
+      .tracklist li[data-play-idx]{cursor:pointer}
+      .play-summary{text-align:center;padding:4px 0 2px}
       .code-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
       .code-file{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 14px;background:var(--bg)}
       .code-file .fname{font-family:"Archivo",monospace;font-weight:700;font-size:14px}
@@ -541,15 +565,6 @@
       </div>
 
       <div class="view" id="viewMix" hidden>
-        <section class="card" aria-labelledby="confirmH">
-          <h2 id="confirmH"><span class="dot"></span>選択中のプレイリスト</h2>
-          <p class="sub" id="confirmSub">まだ選ばれていません。</p>
-          <ul class="mix-summary" id="mixSummary"></ul>
-          <div class="btn-row">
-            <button class="btn ghost" type="button" data-goto-step="1">← 選び直す</button>
-          </div>
-        </section>
-
         <section class="card" aria-labelledby="mixH">
           <h2 id="mixH"><span class="dot"></span>ミックス設定</h2>
           <p class="sub">おすすめが選ばれています。そのまま下のボタンへ進んでOKです。変えたいときだけ触ってください。</p>
@@ -579,19 +594,34 @@
           <p class="sub" id="resultSub">まだミックスしていません。「設定」画面でミックスを作成してください。</p>
 
           <div class="no-play-box" id="noPlayBox" hidden>
-            <p class="np-title">このリストは一括再生できません</p>
+            <p class="np-title">このリストはサイト内で再生できません</p>
             <p class="np-reason">曲に YouTube のURL（動画ID）が含まれていないためです。下のリストで各曲の「YT Music ↗」からは1曲ずつ開けます。</p>
             <button class="btn primary" id="noPlayActionBtn" type="button">選び直す（URL付きのリストを使う）</button>
           </div>
 
           <div class="dedupe-info" id="dedupeInfo" hidden></div>
 
-          <div class="play-hero" id="playHero" hidden>
-            <a class="big-play" id="openYtBtn" href="#" target="_blank" rel="noopener" aria-label="YouTubeで再生する">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13l11-6.5-11-6.5z" fill="#fff"/></svg>
-            </a>
-            <b class="play-total" id="playTotalTime">約0分</b>
+          <div class="play-summary" id="playHero" hidden>
+            <b class="play-total" id="playTotalTime">約0分</b><br>
             <span class="play-sub" id="playTotalSub"></span>
+          </div>
+
+          <div class="player-section" id="playerSection" hidden>
+            <div class="player-frame-wrap">
+              <div id="ytPlayer"></div>
+              <div class="player-frame-ph" id="playerPlaceholder">下の再生ボタンで再生が始まります</div>
+            </div>
+            <div class="now-playing" aria-live="polite">
+              <div class="now-playing-pos" id="nowPlayingPos">1曲目 / 全0曲</div>
+              <div class="now-playing-title" id="nowPlayingTitle">—</div>
+              <div class="now-playing-artist" id="nowPlayingArtist"></div>
+            </div>
+            <div class="player-controls">
+              <button class="player-btn" id="playerPrevBtn" type="button" aria-label="前の曲へ">⏮</button>
+              <button class="player-btn main" id="playerPlayBtn" type="button" aria-label="再生／一時停止">▶</button>
+              <button class="player-btn" id="playerNextBtn" type="button" aria-label="次の曲へ">⏭</button>
+            </div>
+            <p class="player-note" id="playerNote"></p>
           </div>
 
           <ol class="tracklist" id="resultList"></ol>
@@ -600,6 +630,7 @@
           <details class="more-actions" id="moreActions" hidden>
             <summary>その他の操作</summary>
             <div class="btn-row">
+              <a class="btn" id="openYtBtn" href="#" target="_blank" rel="noopener">YouTubeで開く（一括再生・先頭50曲まで）</a>
               <button class="btn" id="saveToAccountBtn" type="button" disabled>アカウントに保存</button>
               <button class="btn" id="copyBtn" type="button" disabled>リストをコピー</button>
               <button class="btn ghost" id="reshuffleBtn" type="button" disabled>もう一度シャッフル</button>
@@ -653,6 +684,113 @@
   };
   var uid = 0;
   function nextId(){ return ++uid; }
+
+  /* ---------- サイト内プレイヤー（YouTube IFrame Player API・キュー再生） ---------- */
+  var ytPlayer = null;
+  var ytApiReady = false;
+  var ytPlayerReady = false;
+  var playerQueue = []; // state.result のインデックス（動画IDがある曲だけ）
+  var playerPos = 0;
+  var playerIsPlaying = false;
+  var playerStarted = false;
+  window.onYouTubeIframeAPIReady = function(){ ytApiReady = true; createYtPlayer(); };
+  (function loadYtApi(){
+    var tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    tag.async = true;
+    var first = document.getElementsByTagName("script")[0];
+    if(first && first.parentNode) first.parentNode.insertBefore(tag, first);
+    else document.head.appendChild(tag);
+  })();
+  function currentResultIdx(){ return playerQueue.length ? playerQueue[Math.min(playerPos, playerQueue.length - 1)] : -1; }
+  function createYtPlayer(){
+    if(!ytApiReady || ytPlayer || !playerQueue.length) return;
+    var firstIdx = currentResultIdx();
+    if(firstIdx < 0) return;
+    var vid = state.result[firstIdx] && state.result[firstIdx].videoId;
+    if(!vid || !(window.YT && YT.Player)) return;
+    var ph = $("playerPlaceholder"); if(ph) ph.hidden = true;
+    ytPlayer = new YT.Player("ytPlayer", {
+      width: "100%", height: "100%",
+      videoId: vid,
+      playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+      events: {
+        onReady: function(){ ytPlayerReady = true; updatePlayerUI(); },
+        onStateChange: onYtStateChange
+      }
+    });
+  }
+  function onYtStateChange(e){
+    if(!window.YT) return;
+    if(e.data === YT.PlayerState.PLAYING){ playerIsPlaying = true; playerStarted = true; }
+    else if(e.data === YT.PlayerState.PAUSED){ playerIsPlaying = false; }
+    else if(e.data === YT.PlayerState.ENDED){
+      playerIsPlaying = false;
+      if(playerPos < playerQueue.length - 1){ playerPos++; loadCurrentVideo(true); return; }
+    }
+    updatePlayerUI();
+  }
+  function loadCurrentVideo(autoplay){
+    var idx = currentResultIdx();
+    if(idx < 0) return;
+    var vid = state.result[idx] && state.result[idx].videoId;
+    if(!vid) return;
+    if(!ytPlayer){
+      createYtPlayer();
+      // API未準備の場合は準備でき次第 createYtPlayer が呼ばれる。再生ボタン再押下でも開始できるよう保留する
+      updatePlayerUI();
+      return;
+    }
+    if(!ytPlayerReady){ updatePlayerUI(); return; }
+    var ph2 = $("playerPlaceholder"); if(ph2) ph2.hidden = true;
+    if(autoplay) ytPlayer.loadVideoById(vid); else ytPlayer.cueVideoById(vid);
+    playerStarted = !!autoplay;
+    playerIsPlaying = !!autoplay;
+    updatePlayerUI();
+  }
+  function updatePlayerUI(){
+    var posEl = $("nowPlayingPos"), titleEl = $("nowPlayingTitle"), artistEl = $("nowPlayingArtist"), playBtn = $("playerPlayBtn");
+    var idx = currentResultIdx();
+    if(idx < 0){
+      if(posEl) posEl.textContent = "再生できる曲がありません";
+      if(titleEl) titleEl.textContent = "—";
+      if(artistEl) artistEl.textContent = "";
+      if(playBtn){ playBtn.textContent = "▶"; playBtn.disabled = true; }
+      var pb0 = $("playerPrevBtn"), nb0 = $("playerNextBtn");
+      if(pb0) pb0.disabled = true; if(nb0) nb0.disabled = true;
+      return;
+    }
+    var t = state.result[idx];
+    if(posEl) posEl.textContent = (playerPos + 1) + "曲目 / 全" + playerQueue.length + "曲";
+    if(titleEl) titleEl.textContent = t.title || "";
+    if(artistEl) artistEl.textContent = t.artist || "";
+    if(playBtn){ playBtn.disabled = false; playBtn.textContent = playerIsPlaying ? "⏸" : "▶"; playBtn.setAttribute("aria-label", playerIsPlaying ? "一時停止" : "再生"); }
+    var pb = $("playerPrevBtn"), nb = $("playerNextBtn");
+    if(pb) pb.disabled = playerPos <= 0;
+    if(nb) nb.disabled = playerPos >= playerQueue.length - 1;
+    // リスト側のハイライト
+    document.querySelectorAll("#resultList li").forEach(function(li){
+      var isCur = +li.getAttribute("data-result-idx") === idx;
+      li.classList.toggle("is-playing", isCur);
+      var badge = li.querySelector(".playing-badge");
+      if(isCur && !badge){
+        var tt = li.querySelector(".tt");
+        if(tt){ var s = document.createElement("span"); s.className = "playing-badge"; s.textContent = "再生中"; tt.appendChild(s); }
+      } else if(!isCur && badge){ badge.remove(); }
+    });
+  }
+  function rebuildPlayerQueue(keepPos){
+    var prevIdx = keepPos ? currentResultIdx() : -1;
+    playerQueue = [];
+    state.result.forEach(function(t, i){ if(t.videoId) playerQueue.push(i); });
+    playerPos = 0;
+    if(keepPos && prevIdx > -1){
+      var np = playerQueue.indexOf(prevIdx);
+      if(np > -1) playerPos = np;
+    }
+    playerIsPlaying = false;
+    playerStarted = false;
+  }
 
   /* ---------- YouTube ログイン連携の状態 ---------- */
   var LS_KEY = "ytmixer_client_id";
@@ -826,18 +964,12 @@
     if(!nextBtn) return;
     var bbEl = $("bottomBar"), appEl = $("appView");
     var inApp = appEl && !appEl.hidden;
-    // 再生画面で一括再生できないときは、下部バー自体を隠す（画面内の大きな案内が唯一の次アクション）
-    if(bbEl && inApp) bbEl.hidden = (currentStep === 3 && state.result.length && !state.resultPlayable);
-    if(currentStep === 3 && state.result.length && !state.resultPlayable){
+    // 再生画面ではサイト内プレイヤーが主操作なので、下部バーは隠す
+    if(bbEl && inApp) bbEl.hidden = (currentStep === 3);
+    if(currentStep === 3){
       if(nextBtn) nextBtn.hidden = true;
       if(mixBtn) mixBtn.hidden = true;
       if(playBtn) playBtn.hidden = true;
-      return;
-    }
-    if(currentStep === 3 && state.result.length){
-      if(nextBtn) nextBtn.hidden = true;
-      if(mixBtn) mixBtn.hidden = true;
-      if(playBtn) playBtn.hidden = false;
       return;
     }
     if(currentStep === 1){
@@ -949,20 +1081,8 @@
     document.querySelectorAll("[data-goto-step]").forEach(function(b){
       if(b.classList.contains("step-tab")) b.classList.toggle("is-active", +b.getAttribute("data-goto-step") === n);
     });
-    if(n === 2) renderMixSummary();
     updateBottomBar();
     window.scrollTo(0, 0);
-  }
-  function renderMixSummary(){
-    var sel = selectedPlaylists();
-    var box = $("mixSummary");
-    if(!sel.length){ $("confirmSub").textContent = "まだ選ばれていません。「選ぶ」画面に戻ってください。"; box.innerHTML = ""; return; }
-    var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
-    var sec = sel.reduce(function(a,p){return a+plSec(p);},0);
-    $("confirmSub").textContent = sel.length + " リスト ・ " + tracks + " 曲 ・ 合計 " + fmt(sec) + "（" + fmtLong(sec) + "）でミックスします。";
-    box.innerHTML = sel.map(function(pl){
-      return '<li><b>' + esc(pl.name) + '</b><span>' + pl.tracks.length + ' 曲 ・ ' + fmt(plSec(pl)) + '</span></li>';
-    }).join("");
   }
 
   /* ---------- rendering: result ---------- */
@@ -978,11 +1098,13 @@
       list.innerHTML = "";
       notice.hidden = true;
       state.resultPlayable = false;
+      rebuildPlayerQueue(false);
       var npb0 = $("noPlayBox"); if(npb0) npb0.hidden = true;
       var ddi0 = $("dedupeInfo"); if(ddi0) ddi0.hidden = true;
+      var ps0 = $("playerSection"); if(ps0) ps0.hidden = true;
       $("playHero").hidden = true;
       $("moreActions").hidden = true;
-      $("openYtBtn").hidden = true;
+      var oy0 = $("openYtBtn"); if(oy0) oy0.hidden = true;
       $("bbPlayBtn").hidden = true;
       $("bbMixBtn").hidden = true;
       $("bbNextBtn").hidden = false;
@@ -1003,47 +1125,59 @@
     $("playTotalTime").textContent = fmtLong(sec);
     $("playTotalSub").textContent = state.result.length + " 曲 ・ 合計 " + fmt(sec) + "（" + (sec >= 3600 ? "長距離ドライブにも十分な長さです" : (sec >= 1800 ? "1時間前後のドライブにぴったり" : "短めのお出かけ向けです")) + "）";
 
+    rebuildPlayerQueue(false);
     list.innerHTML = state.result.map(function(t,i){
       var q = encodeURIComponent((t.title + " " + (t.artist||"")).trim());
-      return '<li>' +
+      var playable = !!t.videoId;
+      return '<li data-result-idx="' + i + '"' + (playable ? ' data-play-idx="' + i + '"' : '') + ' class="' + (playable ? '' : 'is-unplayable') + '">' +
         '<span class="no">' + (i+1) + '</span>' +
         '<span class="bar"></span>' +
         '<div class="tt"><div class="title">' + esc(t.title) + '</div>' +
-        '<div class="artist">' + (t.artist ? esc(t.artist) + " ・ " : "") + '<span class="src">' + esc(t.source) + '</span></div></div>' +
+        '<div class="artist">' + (t.artist ? esc(t.artist) + " ・ " : "") + '<span class="src">' + esc(t.source) + '</span></div>' +
+        (playable ? '' : '<span class="unplayable-badge">再生対象外（URLなし）</span>') + '</div>' +
         '<span class="dur">' + (t.durationSec ? fmt(t.durationSec) : "約3:30") + '</span>' +
         '<a class="mini-link" href="https://music.youtube.com/search?q=' + q + '" target="_blank" rel="noopener">YT Music ↗</a>' +
         '<button class="track-del" type="button" data-del-result="' + i + '" aria-label="結果から削除">✕</button>' +
       '</li>';
     }).join("");
 
-    // 一括再生リンク（動画IDがある曲のみ）
+    // サイト内プレイヤー（動画IDがある曲だけをキュー再生）＋補助の一括再生リンク
     var ids = state.result.map(function(t){return t.videoId;}).filter(Boolean);
     var ytBtn = $("openYtBtn");
     var bbPlay = $("bbPlayBtn");
     if(ids.length){
       state.resultPlayable = true;
       var npb1 = $("noPlayBox"); if(npb1) npb1.hidden = true;
-      $("resultSub").textContent = "あとは再生ボタンを押すだけです。";
+      $("resultSub").textContent = "下のプレイヤーでそのまま再生できます。曲が終わると自動で次へ進みます。";
       $("playHero").hidden = false;
-      ytBtn.hidden = false;
-      ytBtn.classList.remove("is-off");
-      ytBtn.href = "https://www.youtube.com/watch_videos?video_ids=" + ids.slice(0,50).join(",");
-      ytBtn.setAttribute("aria-label", "YouTubeで一括再生（" + Math.min(ids.length,50) + "曲）");
-      bbPlay.hidden = false;
-      bbPlay.href = ytBtn.href;
+      var ps = $("playerSection"); if(ps) ps.hidden = false;
+      var skipped = state.result.length - ids.length;
+      var noteEl = $("playerNote");
+      if(noteEl){
+        noteEl.innerHTML = skipped > 0
+          ? "<b>" + skipped + "曲</b>はURLがないため再生対象外です（リストに「再生対象外」と表示）。再生できるのは <b>" + ids.length + "曲</b>です。"
+          : "全" + ids.length + "曲を順番に再生します。リストの曲をタップしてもその曲から再生できます。";
+      }
+      if(ytBtn){
+        ytBtn.hidden = false;
+        ytBtn.href = "https://www.youtube.com/watch_videos?video_ids=" + ids.slice(0,50).join(",");
+      }
+      if(bbPlay){ bbPlay.hidden = true; bbPlay.href = ytBtn ? ytBtn.href : "#"; }
       $("bbMixBtn").hidden = true;
       $("bbNextBtn").hidden = true;
       notice.hidden = false;
-      notice.textContent = ids.length < state.result.length
-        ? "URLのある " + ids.length + " 曲は一括再生リンクに入っています。曲名だけの曲は、各曲の「YT Music ↗」から検索して開けます。" + (ids.length > 50 ? " 一括再生は先頭50曲までです。" : "")
-        : "一括再生リンクは一時プレイリストとして YouTube で開きます（先頭50曲まで）。YouTube Music アプリで開く場合は、各曲の検索リンクも使えます。";
+      notice.textContent = "サイト内プレイヤーは曲数制限なく全曲再生できます。「その他の操作」のYouTube一括再生は先頭50曲までです。";
+      // プレイヤーの準備（API準備済みなら作成、未準備なら onYouTubeIframeAPIReady で作成）
+      if(ytPlayer && ytPlayerReady){ loadCurrentVideo(false); }
+      else { createYtPlayer(); updatePlayerUI(); }
     } else {
       state.resultPlayable = false;
-      // 押せない灰色の大きな再生ボタンは出さない。理由と次の行動を大きく1つだけ出す
       $("playHero").hidden = true;
+      var ps2 = $("playerSection"); if(ps2) ps2.hidden = true;
       var npb2 = $("noPlayBox"); if(npb2) npb2.hidden = false;
-      $("resultSub").textContent = "曲にURLが含まれていないため、このままでは一括再生できません。";
-      bbPlay.hidden = true;
+      $("resultSub").textContent = "曲にURLが含まれていないため、サイト内では再生できません。";
+      if(ytBtn) ytBtn.hidden = true;
+      if(bbPlay) bbPlay.hidden = true;
       $("bbMixBtn").hidden = true;
       $("bbNextBtn").hidden = true;
       notice.hidden = true;
@@ -1389,6 +1523,36 @@
   bindSwitch("dedupeSwitch","dedupe");
   bindSwitch("balanceSwitch","balance");
 
+  /* ---------- サイト内プレイヤーの操作 ---------- */
+  var pPlay = $("playerPlayBtn");
+  if(pPlay) pPlay.addEventListener("click", function(){
+    if(!playerQueue.length) return;
+    if(!ytPlayer || !ytPlayerReady){
+      createYtPlayer();
+      // 作成直後は onReady 後に再生できるよう、少し待ってから再生を試みる
+      var tries = 0;
+      var iv = setInterval(function(){
+        tries++;
+        if(ytPlayer && ytPlayerReady){ clearInterval(iv); loadCurrentVideo(true); try{ ytPlayer.playVideo(); }catch(e){} }
+        else if(tries > 20){ clearInterval(iv); toast("プレイヤーの読み込み中です。もう一度押してください"); }
+      }, 250);
+      return;
+    }
+    if(playerIsPlaying){ ytPlayer.pauseVideo(); }
+    else {
+      if(!playerStarted){ loadCurrentVideo(true); }
+      else { ytPlayer.playVideo(); }
+    }
+  });
+  var pPrev = $("playerPrevBtn");
+  if(pPrev) pPrev.addEventListener("click", function(){
+    if(playerPos > 0){ playerPos--; if(ytPlayer && ytPlayerReady) loadCurrentVideo(true); else updatePlayerUI(); }
+  });
+  var pNext = $("playerNextBtn");
+  if(pNext) pNext.addEventListener("click", function(){
+    if(playerPos < playerQueue.length - 1){ playerPos++; if(ytPlayer && ytPlayerReady) loadCurrentVideo(true); else updatePlayerUI(); }
+  });
+
   $("bbMixBtn").addEventListener("click", mix);
   $("bbNextBtn").addEventListener("click", function(){ goToStep(2); });
   var npAction = $("noPlayActionBtn");
@@ -1477,6 +1641,20 @@
     closeDeleteConfirm();
     persistSelection();
     renderPlaylists(); toast("プレイリストを削除しました");
+  });
+
+  // 再生リストの曲をタップしたら、その曲から再生
+  var resultListEl = $("resultList");
+  if(resultListEl) resultListEl.addEventListener("click", function(e){
+    if(e.target.closest && (e.target.closest("[data-del-result]") || e.target.closest("a"))) return;
+    var li = e.target.closest ? e.target.closest("[data-play-idx]") : null;
+    if(!li) return;
+    var rIdx = +li.getAttribute("data-play-idx");
+    var qPos = playerQueue.indexOf(rIdx);
+    if(qPos < 0) return;
+    playerPos = qPos;
+    if(ytPlayer && ytPlayerReady) loadCurrentVideo(true);
+    else { createYtPlayer(); updatePlayerUI(); var pb = $("playerSection"); if(pb) pb.scrollIntoView({behavior:"smooth", block:"center"}); }
   });
 
   // delegation for dynamic buttons
