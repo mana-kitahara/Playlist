@@ -402,7 +402,7 @@
       #viewPlay .card{padding:10px 12px 12px;margin-bottom:8px}
       #viewPlay .card .sub{margin-bottom:6px}
       .player-section{margin:0 auto;max-width:560px;border:0;border-radius:0;background:transparent;padding:2px 2px 0}
-      .artwork-wrap{position:relative;width:100%;margin:0;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:var(--surface-2)}
+      .artwork-wrap{position:relative;width:70%;margin:0 auto;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:var(--surface-2)}
       .artwork-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;color:var(--muted)}
       .artwork-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
       /* 埋め込みプレイヤー本体は音声再生専用：画面外に配置して一切見せず、タップもできないようにする（display:noneにはしない） */
@@ -414,10 +414,10 @@
       /* 下部固定バーに隠れないための余白（1 選ぶ画面） */
       .bottom-spacer{height:calc(110px + env(safe-area-inset-bottom))}
       .dur-unknown{font-size:11.5px}
-      .now-playing{margin-top:10px;text-align:left;width:100%;max-width:100%;box-sizing:border-box}
+      .now-playing{margin:10px auto 0;text-align:left;width:70%;max-width:70%;box-sizing:border-box}
       .now-playing-pos{font-size:12px;font-weight:800;color:var(--red);letter-spacing:.02em;text-align:center;margin-top:6px;line-height:1.4}
-      .now-playing-title{font-size:19px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;max-width:100%}
-      .now-playing-artist{font-size:13px;color:var(--muted);margin-top:1px;overflow-wrap:anywhere;line-height:1.4;max-width:100%}
+      .now-playing-title{font-size:20px;font-weight:800;line-height:1.35;overflow-wrap:anywhere;max-width:100%}
+      .now-playing-artist{font-size:13px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere;line-height:1.4;max-width:100%}
       .seek-wrap{margin-top:6px}
       .seek-bar{width:100%;accent-color:var(--red);height:24px;min-height:24px;cursor:pointer;background:transparent;padding:0;margin:0;display:block;-webkit-appearance:none;appearance:none;--seek-pct:0%}
       .seek-bar:disabled{opacity:.4;cursor:not-allowed}
