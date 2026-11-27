@@ -340,9 +340,25 @@
       .more-actions .btn-row{margin-top:2px}
       .tracklist{list-style:none;margin:14px 0 0;padding:0}
       .tracklist li{
-        display:flex;gap:11px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line);
+        position:relative;overflow:hidden;border-bottom:1px solid var(--line);
       }
       .tracklist li:last-child{border-bottom:none}
+      /* スワイプで動く行本体：縦スクロールはブラウザに任せ、横方向だけ受け取る */
+      .track-row{
+        display:flex;gap:11px;align-items:center;padding:9px 4px;
+        background:var(--bg);position:relative;z-index:1;
+        touch-action:pan-y;transition:transform .22s ease;
+      }
+      .track-row.swiping{transition:none}
+      /* 行の下に隠れている赤い削除エリア（左スワイプで出現） */
+      .track-del-zone{
+        position:absolute;top:0;right:0;bottom:0;width:84px;z-index:0;
+        border:0;background:var(--red);color:#fff;cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+        font-size:11px;font-weight:800;line-height:1.2;padding:0;min-height:0;
+      }
+      .track-del-zone svg{width:22px;height:22px;display:block;fill:#fff}
+      .track-del-zone:active{background:var(--red-dark)}
       .no{
         font-family:"Archivo",sans-serif;font-weight:700;color:var(--muted);font-size:13px;width:26px;flex:none;text-align:right;
       }
@@ -358,11 +374,6 @@
       .tt .artist .src{color:var(--ink-2)}
       .dur{font-family:"Archivo",sans-serif;font-size:12.5px;color:var(--muted);flex:none}
       .mini-link{flex:none;font-size:12.5px;font-weight:700;text-decoration:none;padding:12px 6px}
-      .track-del{
-        flex:none;width:48px;height:48px;min-width:48px;min-height:48px;border-radius:10px;border:1px solid var(--line);
-        background:var(--surface-2);color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;padding:0;
-      }
-      .track-del:active{color:var(--red);border-color:var(--red)}
       /* 再生できないときの大きな案内 */
       .no-play-box{
         border:1.5px solid var(--line);border-radius:var(--radius);background:var(--bg);
@@ -405,10 +416,10 @@
       body.on-play footer{margin-top:10px}
       body.on-play .hero{padding-top:6px}
       body.on-play .steps-nav{margin-top:6px}
-      #viewPlay{margin-top:6px}
-      #viewPlay .card{padding:10px 12px 12px;margin-bottom:8px}
+      #viewPlay{margin-top:10px}
+      #viewPlay .card{padding:20px 14px 22px;margin-bottom:10px}
       #viewPlay .card .sub{margin-bottom:6px}
-      .player-section{margin:0 auto;max-width:560px;border:0;border-radius:0;background:transparent;padding:6px 2px 0}
+      .player-section{margin:0 auto;max-width:560px;border:0;border-radius:0;background:transparent;padding:10px 2px 4px}
       .artwork-wrap{position:relative;width:92%;margin:0 auto;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:var(--surface-2)}
       .artwork-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;color:var(--muted)}
       .artwork-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
@@ -421,14 +432,14 @@
       /* 下部固定バーに隠れないための余白（1 選ぶ画面） */
       .bottom-spacer{height:calc(110px + env(safe-area-inset-bottom))}
       .dur-unknown{font-size:11.5px}
-      .now-playing{margin:16px auto 0;text-align:left;width:92%;max-width:92%;box-sizing:border-box}
-      .now-playing-pos{font-size:12px;font-weight:800;color:var(--red);letter-spacing:.02em;text-align:center;margin-top:10px;line-height:1.4}
+      .now-playing{margin:22px auto 0;text-align:left;width:92%;max-width:92%;box-sizing:border-box}
+      .now-playing-pos{font-size:12px;font-weight:800;color:var(--red);letter-spacing:.02em;text-align:center;margin-top:16px;line-height:1.4}
       .now-playing-title{font-size:20px;font-weight:800;line-height:1.35;max-width:100%;text-align:left;overflow:hidden;position:relative}
       .np-title-inner{display:block;overflow-wrap:anywhere}
       .now-playing-title.is-marquee .np-title-inner{display:inline-block;white-space:nowrap;overflow-wrap:normal;word-break:normal;will-change:transform;vertical-align:top}
       .now-playing-title.is-clamped .np-title-inner{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
       .now-playing-artist{font-size:14px;color:var(--muted);margin-top:3px;overflow-wrap:anywhere;line-height:1.4;max-width:100%;text-align:left}
-      .seek-wrap{margin:14px auto 0;width:92%}
+      .seek-wrap{margin:20px auto 0;width:92%}
       .seek-bar{width:100%;accent-color:var(--red);height:20px;min-height:20px;cursor:pointer;background:transparent;padding:0;margin:0;display:block;-webkit-appearance:none;appearance:none;--seek-pct:0%}
       .seek-bar:disabled{opacity:.4;cursor:not-allowed}
       /* シークバーは細い線だけ：進んだ部分は赤、残りはグレー塗り。枠なし、つまみは小さく残す */
@@ -438,7 +449,7 @@
       .seek-bar::-moz-range-progress{height:4px;border:0;border-radius:999px;background:var(--red);box-sizing:border-box}
       .seek-bar::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--red);border:0;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25)}
       .seek-times{display:flex;justify-content:space-between;font-family:"Archivo",sans-serif;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.3}
-      .player-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px auto 0;width:92%;flex-wrap:nowrap}
+      .player-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px auto 0;width:92%;flex-wrap:nowrap}
       .player-btn{width:48px;height:48px;min-width:48px;min-height:48px;border-radius:50%;border:0;background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:20px;padding:0;flex:none}
       .player-btn:disabled{opacity:.35;cursor:not-allowed}
       .player-btn:active{transform:scale(.94)}
@@ -455,7 +466,7 @@
       .loop-toggle[aria-pressed="true"]{color:var(--red)}
       .loop-toggle:active{transform:scale(.94)}
       /* 曲一覧の折りたたみ */
-      .tracklist-fold{margin-top:8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);overflow:hidden}
+      .tracklist-fold{margin-top:16px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);overflow:hidden}
       .tracklist-fold>summary{
         cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;
         padding:10px 12px;font-weight:900;font-size:14.5px;min-height:44px;
@@ -468,7 +479,7 @@
       .tracklist-fold .tracklist{margin-top:0;padding:0 10px 6px}
       .player-note{margin-top:6px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.45}
       .player-note b{color:var(--ink-2)}
-      .tracklist li.is-playing{background:var(--red-soft);border-radius:10px;padding-left:8px;padding-right:8px}
+      .tracklist li.is-playing .track-row{background:var(--red-soft)}
       .tracklist li.is-playing .title{color:var(--red)}
       .tracklist li.is-playing .no{color:var(--red)}
       .tracklist li.is-unplayable{opacity:.62}
@@ -477,8 +488,8 @@
       .tracklist li[data-play-idx]{cursor:pointer}
       .play-summary{text-align:center;padding:0;margin-top:2px;line-height:1.35}
       .play-summary .play-total{margin-top:0;font-size:19px}
-      #viewPlay .more-actions{margin-top:8px}
-      #viewPlay .notice{margin-top:8px}
+      #viewPlay .more-actions{margin-top:14px}
+      #viewPlay .notice{margin-top:14px}
       .code-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
       .code-file{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 14px;background:var(--bg)}
       .code-file .fname{font-family:"Archivo",monospace;font-weight:700;font-size:14px}
@@ -486,7 +497,7 @@
       footer{margin-top:26px;font-size:12.5px;color:var(--muted);text-align:center}
 
       @media (max-width:560px){
-        .tracklist li{flex-wrap:wrap;row-gap:2px}
+        .track-row{flex-wrap:wrap;row-gap:2px}
         .tracklist .tt{flex:1 1 170px}
         .tracklist .dur{margin-left:auto}
         .tt .artist .src{display:block}
@@ -1468,6 +1479,8 @@
       var q = encodeURIComponent((t.title + " " + (t.artist||"")).trim());
       var playable = !!t.videoId;
       return '<li data-result-idx="' + i + '"' + (playable ? ' data-play-idx="' + i + '"' : '') + ' class="' + (playable ? '' : 'is-unplayable') + '">' +
+        '<button class="track-del-zone" type="button" data-del-result="' + i + '" aria-label="この曲を削除" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>削除</button>' +
+        '<div class="track-row">' +
         '<span class="no">' + (i+1) + '</span>' +
         '<span class="bar"></span>' +
         '<div class="tt"><div class="title tl-title"><span class="tl-title-inner">' + esc(t.title) + '</span></div>' +
@@ -1475,7 +1488,7 @@
         (playable ? '' : '<span class="unplayable-badge">再生対象外（URLなし）</span>') + '</div>' +
         '<span class="dur' + (trackUnknown(t) ? ' dur-unknown' : '') + '">' + (trackUnknown(t) ? "長さ不明" : fmt(t.durationSec)) + '</span>' +
         '<a class="mini-link" href="https://music.youtube.com/search?q=' + q + '" target="_blank" rel="noopener">YT Music ↗</a>' +
-        '<button class="track-del" type="button" data-del-result="' + i + '" aria-label="結果から削除">✕</button>' +
+        '</div>' +
       '</li>';
     }).join("");
     /* 曲一覧を再描画したら曲名のはみ出しを計測し直す（見えている行だけマーキー） */
@@ -2024,6 +2037,88 @@
     if(ytPlayer && ytPlayerReady) loadCurrentVideo(true);
     else { createYtPlayer(); updatePlayerUI(); var pb = $("playerSection"); if(pb) pb.scrollIntoView({behavior:"smooth", block:"center"}); }
   });
+
+  /* ---------- 曲一覧：左スワイプで削除（YouTube Music風） ----------
+     行を左に引くと下の赤い削除エリアが見える。大きく引いて離すと即削除、
+     少し引くとエリアが出たまま止まり、タップで削除（どちらも確認なし）。
+     削除は既存の data-del-result と同じ splice＋renderResult の流れを使う。
+     縦方向の動きはスクロールに譲り、横方向だけに反応する。 */
+  var SWIPE_ZONE_W = 84;     // 削除エリアの幅
+  var SWIPE_DELETE_X = -136; // ここまで引いて離したら即削除
+  var swipe = null;          // {row,startX,startY,baseX,x,decided,horizontal,moved}
+  var swipeOpenRow = null;   // 削除エリアが出たままになっている行
+  var swipeBlockClick = false;
+  function swipeCloseOpenRow(except){
+    if(swipeOpenRow && swipeOpenRow !== except){
+      if(document.contains(swipeOpenRow)) swipeOpenRow.style.transform = "translateX(0px)";
+      swipeOpenRow = null;
+    }
+  }
+  if(resultListEl){
+    resultListEl.addEventListener("pointerdown", function(e){
+      swipeBlockClick = false;
+      if(e.button !== undefined && e.button > 0) return;
+      if(e.target.closest && e.target.closest(".track-del-zone")) return; // 削除エリアのタップはクリック処理に任せる
+      var row = e.target.closest ? e.target.closest(".track-row") : null;
+      swipeCloseOpenRow(row);
+      if(!row) return;
+      var baseX = (swipeOpenRow === row) ? -SWIPE_ZONE_W : 0;
+      swipe = { row: row, startX: e.clientX, startY: e.clientY, baseX: baseX, x: baseX, decided: false, horizontal: false, moved: false };
+    });
+    // スワイプ直後のクリックで曲が再生されてしまわないよう止める
+    resultListEl.addEventListener("click", function(e){
+      if(swipeBlockClick){ swipeBlockClick = false; e.stopPropagation(); e.preventDefault(); }
+    }, true);
+  }
+  window.addEventListener("pointermove", function(e){
+    if(!swipe) return;
+    var dx = e.clientX - swipe.startX;
+    var dy = e.clientY - swipe.startY;
+    if(!swipe.decided){
+      if(Math.abs(dx) < 7 && Math.abs(dy) < 7) return;
+      swipe.decided = true;
+      swipe.horizontal = Math.abs(dx) > Math.abs(dy);
+      if(swipe.horizontal) swipe.row.classList.add("swiping");
+    }
+    if(!swipe.horizontal) return;
+    var x = swipe.baseX + dx;
+    if(x > 0) x = 0;
+    if(x < -(SWIPE_ZONE_W + 72)) x = -(SWIPE_ZONE_W + 72);
+    swipe.x = x;
+    if(Math.abs(dx) > 7) swipe.moved = true;
+    swipe.row.style.transform = "translateX(" + x + "px)";
+  }, { passive: true });
+  function swipeFinish(commit){
+    if(!swipe) return;
+    var s = swipe; swipe = null;
+    s.row.classList.remove("swiping");
+    if(!s.decided || !s.horizontal){
+      // タップ：削除エリアが出ていた行は、再生せずに閉じるだけにする
+      if(s.baseX < 0){
+        swipeBlockClick = true;
+        s.row.style.transform = "translateX(0px)";
+        if(swipeOpenRow === s.row) swipeOpenRow = null;
+      }
+      return;
+    }
+    if(s.moved) swipeBlockClick = true;
+    if(commit && s.x <= SWIPE_DELETE_X){
+      var li = s.row.closest ? s.row.closest("li[data-result-idx]") : null;
+      var idx = li ? +li.getAttribute("data-result-idx") : -1;
+      if(swipeOpenRow === s.row) swipeOpenRow = null;
+      if(idx >= 0){ state.result.splice(idx, 1); renderResult(); }
+      return;
+    }
+    if(s.x <= -SWIPE_ZONE_W / 2){
+      s.row.style.transform = "translateX(" + (-SWIPE_ZONE_W) + "px)";
+      swipeOpenRow = s.row;
+    } else {
+      s.row.style.transform = "translateX(0px)";
+      if(swipeOpenRow === s.row) swipeOpenRow = null;
+    }
+  }
+  window.addEventListener("pointerup", function(){ swipeFinish(true); });
+  window.addEventListener("pointercancel", function(){ swipeFinish(false); });
 
   // delegation for dynamic buttons
   document.addEventListener("click", function(e){
