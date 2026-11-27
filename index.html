@@ -396,10 +396,10 @@
       .artwork-wrap{position:relative;width:100%;aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:var(--surface-2)}
       .artwork-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:76px;color:var(--muted)}
       .artwork-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-      /* 埋め込み動画は再生専用：アートワークの下に16:9のまま小さく独立配置（重ねない） */
-      .player-frame-wrap{position:relative;width:min(260px,72%);aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.25);margin:12px auto 0}
-      .player-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-      .player-frame-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;text-align:center;padding:6px}
+      /* 埋め込みプレイヤー本体は音声再生専用：画面外に配置して一切見せず、タップもできないようにする（display:noneにはしない） */
+      .player-frame-wrap{position:fixed;left:-10000px;top:0;width:320px;height:180px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1}
+      .player-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+      .player-frame-ph{display:none}
       /* 操作列：各ボタンの下に小さな文字ラベル */
       .ctrl-unit{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none}
       .ctrl-label{font-size:10.5px;font-weight:700;color:var(--muted);line-height:1.2;white-space:nowrap}
@@ -628,9 +628,9 @@
               <span class="artwork-ph" id="artworkPh" aria-hidden="true">♪</span>
               <img class="artwork-img" id="nowArtwork" alt="" hidden>
             </div>
-            <div class="player-frame-wrap">
+            <div class="player-frame-wrap" aria-hidden="true">
               <div id="ytPlayer"></div>
-              <div class="player-frame-ph" id="playerPlaceholder">再生ボタンで開始</div>
+              <div class="player-frame-ph" id="playerPlaceholder" hidden>再生ボタンで開始</div>
             </div>
             <div class="now-playing" aria-live="polite">
               <div class="now-playing-title" id="nowPlayingTitle">—</div>
