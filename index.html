@@ -210,10 +210,12 @@
       .pl-thumb-ph{display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--muted);font-size:34px}
       .pl-thumb-wrap .pl-check{position:absolute;right:5px;bottom:5px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
       .pl-del-overlay{
-        position:absolute;top:5px;right:5px;width:28px;height:28px;min-height:28px;border-radius:50%;
-        border:0;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;font-size:12px;line-height:1;
+        position:absolute;top:6px;left:6px;right:auto;width:44px;height:44px;min-height:44px;border-radius:10px;
+        border:1.5px solid rgba(255,255,255,.95);background:rgba(20,20,20,.82);color:#fff;cursor:pointer;font-size:19px;font-weight:900;line-height:1;
         display:flex;align-items:center;justify-content:center;padding:0;z-index:2;
+        box-shadow:0 2px 8px rgba(0,0,0,.35);
       }
+      .pl-del-overlay:active{background:var(--red)}
       .pl-stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px}
       .pl-stat{font-size:12px;color:var(--muted)}
       .pl-stat b{font-family:"Archivo",sans-serif;font-size:19px;font-weight:800;color:var(--ink);margin-right:2px}
@@ -308,10 +310,7 @@
         display:flex;align-items:center;gap:12px;
         box-shadow:0 -4px 18px rgba(0,0,0,.08);
       }
-      .bottombar .bb-info{flex:1;min-width:0;line-height:1.35}
-      .bottombar .bb-info b{font-family:"Archivo",sans-serif;font-size:16px;display:block}
-      .bottombar .bb-info span{font-size:11.5px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .bottombar .btn{flex:none;min-height:52px;padding:10px 20px;font-size:15px}
+      .bottombar .btn{flex:1;min-height:54px;padding:10px 20px;font-size:16px;width:100%}
       @media (min-width:1024px){
         .bottombar{left:50%;right:auto;transform:translateX(-50%);width:min(1180px,100%);border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:14px 14px 0 0}
       }
@@ -350,13 +349,59 @@
       .tt .artist .src{color:var(--ink-2)}
       .dur{font-family:"Archivo",sans-serif;font-size:12.5px;color:var(--muted);flex:none}
       .mini-link{flex:none;font-size:12.5px;font-weight:700;text-decoration:none;padding:12px 6px}
+      .track-del{
+        flex:none;width:48px;height:48px;min-width:48px;min-height:48px;border-radius:10px;border:1px solid var(--line);
+        background:var(--surface-2);color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;padding:0;
+      }
+      .track-del:active{color:var(--red);border-color:var(--red)}
+      /* 再生できないときの大きな案内 */
+      .no-play-box{
+        border:1.5px solid var(--line);border-radius:var(--radius);background:var(--bg);
+        padding:20px 16px;text-align:center;margin:6px 0 4px;
+      }
+      .no-play-box .np-title{font-size:19px;font-weight:900;line-height:1.45;margin:0 0 8px}
+      .no-play-box .np-reason{font-size:14px;color:var(--ink-2);line-height:1.65;margin:0 0 16px}
+      .no-play-box .btn{width:100%;min-height:56px;font-size:16px;border-radius:11px}
+      .dedupe-info{
+        background:var(--red-soft);border:1px solid var(--line);border-radius:var(--radius-sm);
+        padding:11px 14px;font-size:14px;font-weight:800;margin-top:12px;text-align:center;
+      }
+      /* 手動追加アコーディオン */
+      .manual-add{padding:0;overflow:hidden}
+      .manual-add>summary{
+        cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;
+        padding:16px 18px;font-weight:900;font-size:17px;min-height:56px;
+      }
+      .manual-add>summary::-webkit-details-marker{display:none}
+      .manual-add>summary .dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:none}
+      .manual-add>summary .ma-note{font-size:12px;font-weight:700;color:var(--muted)}
+      .manual-add>summary .chev{margin-left:auto;flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);transition:transform .18s ease}
+      .manual-add[open ]>summary .chev{transform:rotate(180deg)}
+      .manual-add .ma-body{padding:0 18px 18px}
+      .manual-add .ma-body .sub{margin:0 0 14px;font-size:13px;color:var(--muted)}
+      /* 確認ダイアログ */
+      .confirm-overlay{
+        position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55);
+        display:flex;align-items:center;justify-content:center;padding:20px;
+      }
+      .confirm-box{background:var(--surface);color:var(--ink);border-radius:14px;padding:20px;width:100%;max-width:380px;box-shadow:0 16px 40px rgba(0,0,0,.3)}
+      .confirm-box p{margin:0 0 6px;font-size:16px;font-weight:800;line-height:1.5}
+      .confirm-box .c-sub{font-size:13px;color:var(--muted);font-weight:500;margin:0 0 16px}
+      .confirm-box .btn-row{margin-top:0}
+      .confirm-box .btn{flex:1;min-height:52px}
+      .btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+      /* 無効化されたスイッチ行 */
+      .switch-row.is-disabled .txt{opacity:.55}
+      .switch-row.is-disabled .switch{opacity:.4;pointer-events:none}
+      .balance-note{font-size:12px;color:var(--red);font-weight:700;display:block;margin-top:2px}
       .notice{
         background:var(--red-soft);border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;color:var(--ink-2);margin-top:13px;
       }
       .toast{
-        position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
+        position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));bottom:auto;transform:translateX(-50%) translateY(-16px);
         background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:999px;font-size:13.5px;font-weight:700;
-        opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:50;max-width:92vw;text-align:center;
+        opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:90;max-width:92vw;text-align:center;
+        box-shadow:0 8px 24px rgba(0,0,0,.25);
       }
       .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -473,8 +518,9 @@
             </div>
           </section>
 
-          <section class="card" aria-labelledby="addH">
-            <h2 id="addH"><span class="dot"></span>プレイリストを追加</h2>
+          <details class="card manual-add" id="manualAdd">
+            <summary id="addH"><span class="dot"></span>プレイリストを手動で追加<span class="ma-note">タップで開く</span><span class="chev" aria-hidden="true">▾</span></summary>
+            <div class="ma-body">
             <p class="sub">手動で作ったリストも、上の一覧に並んで同じように選べます。1行に1曲。YouTube / YouTube Music のURLを貼ると動画IDを自動で読み取ります。</p>
 
             <label class="f" for="plName">プレイリスト名</label>
@@ -489,10 +535,8 @@
               <button class="btn ghost" id="loadSampleBtn" type="button">サンプルで試す</button>
             </div>
             <p class="hint">※ ログインしていない場合の手動追加です。追加したリストは上の一覧に表示されます。</p>
-          </section>
-          <div class="view-nav">
-            <button class="btn primary" type="button" id="toMixBtn">次へ：ミックス設定を確認 →</button>
-          </div>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -508,7 +552,7 @@
 
         <section class="card" aria-labelledby="mixH">
           <h2 id="mixH"><span class="dot"></span>ミックス設定</h2>
-          <p class="sub">おすすめが選ばれています。そのまま「ミックスを作る」へ進んでOKです。変えたいときだけ触ってください。</p>
+          <p class="sub">おすすめが選ばれています。そのまま下のボタンへ進んでOKです。変えたいときだけ触ってください。</p>
 
           <div class="seg" role="group" aria-label="並び順">
             <button type="button" data-mode="append"><b>そのままつなげる</b><span>リスト順に全部つなぐ</span></button>
@@ -521,12 +565,11 @@
             <div class="txt"><b>重複する曲を取り除く <span class="rec">おすすめ</span></b><span>同じ動画・同じ「曲名＋アーティスト」は1曲にまとめます</span></div>
             <button class="switch" id="dedupeSwitch" type="button" role="switch" aria-checked="true" aria-label="重複する曲を取り除く"></button>
           </div>
-          <div class="switch-row">
-            <div class="txt"><b>各プレイリストを均等に使う</b><span>交互・分散のとき、曲数が多いリストに偏らないよう調整します</span></div>
+          <div class="switch-row" id="balanceRow">
+            <div class="txt"><b>各プレイリストを均等に使う</b><span>交互・分散のとき、曲数が多いリストに偏らないよう調整します</span><span class="balance-note" id="balanceNote" hidden>シャッフルでは使われません</span></div>
             <button class="switch" id="balanceSwitch" type="button" role="switch" aria-checked="false" aria-label="各プレイリストを均等に使う"></button>
           </div>
 
-          <button class="btn primary big-mix" id="mixBtn" type="button">▶ ミックスを作って再生画面へ</button>
         </section>
       </div>
 
@@ -534,6 +577,14 @@
         <section class="card" aria-labelledby="resultH">
           <h2 id="resultH"><span class="dot"></span>再生リスト</h2>
           <p class="sub" id="resultSub">まだミックスしていません。「設定」画面でミックスを作成してください。</p>
+
+          <div class="no-play-box" id="noPlayBox" hidden>
+            <p class="np-title">このリストは一括再生できません</p>
+            <p class="np-reason">曲に YouTube のURL（動画ID）が含まれていないためです。下のリストで各曲の「YT Music ↗」からは1曲ずつ開けます。</p>
+            <button class="btn primary" id="noPlayActionBtn" type="button">選び直す（URL付きのリストを使う）</button>
+          </div>
+
+          <div class="dedupe-info" id="dedupeInfo" hidden></div>
 
           <div class="play-hero" id="playHero" hidden>
             <a class="big-play" id="openYtBtn" href="#" target="_blank" rel="noopener" aria-label="YouTubeで再生する">
@@ -566,10 +617,20 @@
     </div>
 
     <div class="bottombar" id="bottomBar" role="region" aria-label="次の操作" hidden>
-      <div class="bb-info"><b id="bbTime">0:00</b><span id="bbLabel">プレイリストが未選択です</span></div>
-      <button class="btn primary" id="bbNextBtn" type="button">次へ →</button>
-      <button class="btn primary" id="bbMixBtn" type="button" hidden>▶ ミックスを作成</button>
-      <a class="btn primary" id="bbPlayBtn" href="#" target="_blank" rel="noopener" hidden>▶ 再生する</a>
+      <button class="btn primary" id="bbNextBtn" type="button">次へ：設定を確認 →</button>
+      <button class="btn primary" id="bbMixBtn" type="button" hidden>次へ：ミックスを作成 →</button>
+      <a class="btn primary" id="bbPlayBtn" href="#" target="_blank" rel="noopener" hidden>▶ YouTubeで再生する</a>
+    </div>
+
+    <div class="confirm-overlay" id="confirmOverlay" hidden>
+      <div class="confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <p id="confirmTitle">プレイリストを削除しますか？</p>
+        <p class="c-sub" id="confirmSubText"></p>
+        <div class="btn-row">
+          <button class="btn ghost" id="confirmCancelBtn" type="button">キャンセル</button>
+          <button class="btn danger" id="confirmOkBtn" type="button">削除する</button>
+        </div>
+      </div>
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -586,7 +647,9 @@
     mode: "interleave",
     dedupe: true,
     balance: false,
-    result: []       // mixed tracks with source info
+    result: [],      // mixed tracks with source info
+    lastDedupeRemoved: 0,
+    resultPlayable: false
   };
   var uid = 0;
   function nextId(){ return ++uid; }
@@ -738,7 +801,7 @@
         var countHtml = '<div class="pl-stats"><span class="pl-stat"><b>' + count + '</b><small>曲</small></span></div>';
         return '<article class="pl-card ' + (pl.included ? "on" : "off") + (pl.loading ? " loading" : "") + '" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
           '<span class="pl-thumb-wrap">' + thumbHtml +
-            (pl.ytId ? '' : '<button class="pl-del-overlay" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">✕</button>') +
+            (pl.ytId ? '' : '<button class="pl-del-overlay" type="button" data-del-pl="' + pl.id + '" aria-label="' + esc(pl.name) + 'を削除">✕</button>') +
             '<span class="pl-check" aria-hidden="true">' + (pl.included ? "✓" : "") + '</span></span>' +
           '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' + countHtml + '</div>' +
         '</article>';
@@ -759,29 +822,31 @@
     updateBottomBar();
   }
   function updateBottomBar(){
-    var bbTime = $("bbTime"), bbLabel = $("bbLabel");
-    if(!bbTime) return;
     var nextBtn = $("bbNextBtn"), mixBtn = $("bbMixBtn"), playBtn = $("bbPlayBtn");
-    if(currentStep === 3 && state.result.length){
-      bbTime.textContent = fmt(resultSec());
-      bbLabel.textContent = "ミックス結果 " + state.result.length + " 曲";
+    if(!nextBtn) return;
+    var bbEl = $("bottomBar"), appEl = $("appView");
+    var inApp = appEl && !appEl.hidden;
+    // 再生画面で一括再生できないときは、下部バー自体を隠す（画面内の大きな案内が唯一の次アクション）
+    if(bbEl && inApp) bbEl.hidden = (currentStep === 3 && state.result.length && !state.resultPlayable);
+    if(currentStep === 3 && state.result.length && !state.resultPlayable){
       if(nextBtn) nextBtn.hidden = true;
       if(mixBtn) mixBtn.hidden = true;
+      if(playBtn) playBtn.hidden = true;
       return;
     }
-    var sel = selectedPlaylists();
-    var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
-    var sec = sel.reduce(function(a,p){return a+plSec(p);},0);
-    bbTime.textContent = fmt(sec);
+    if(currentStep === 3 && state.result.length){
+      if(nextBtn) nextBtn.hidden = true;
+      if(mixBtn) mixBtn.hidden = true;
+      if(playBtn) playBtn.hidden = false;
+      return;
+    }
     if(currentStep === 1){
-      bbLabel.textContent = tracks ? ("選択中 " + tracks + " 曲 ・ " + sel.length + " リスト") : "プレイリストが未選択です";
       if(nextBtn){ nextBtn.hidden = false; nextBtn.textContent = "次へ：設定を確認 →"; }
       if(mixBtn) mixBtn.hidden = true;
       if(playBtn) playBtn.hidden = true;
     } else if(currentStep === 2){
-      bbLabel.textContent = tracks ? ("選択中 " + tracks + " 曲でミックスします") : "プレイリストが未選択です";
       if(nextBtn) nextBtn.hidden = true;
-      if(mixBtn) mixBtn.hidden = false;
+      if(mixBtn){ mixBtn.hidden = false; mixBtn.textContent = "次へ：ミックスを作成 →"; }
       if(playBtn) playBtn.hidden = true;
     }
   }
@@ -855,7 +920,9 @@
       out = result;
     }
 
+    var beforeDedupe = out.length;
     if(state.dedupe) out = dedupeTracks(out);
+    state.lastDedupeRemoved = state.dedupe ? (beforeDedupe - out.length) : 0;
     state.result = out;
     renderResult();
     toast("ミックスを作成しました（" + out.length + " 曲）");
@@ -910,6 +977,9 @@
     if(!has){
       list.innerHTML = "";
       notice.hidden = true;
+      state.resultPlayable = false;
+      var npb0 = $("noPlayBox"); if(npb0) npb0.hidden = true;
+      var ddi0 = $("dedupeInfo"); if(ddi0) ddi0.hidden = true;
       $("playHero").hidden = true;
       $("moreActions").hidden = true;
       $("openYtBtn").hidden = true;
@@ -921,7 +991,13 @@
       return;
     }
     var sec = resultSec();
-    $("resultSub").textContent = "あとは再生ボタンを押すだけです。";
+    var ddi = $("dedupeInfo");
+    if(ddi){
+      if(state.lastDedupeRemoved > 0){
+        ddi.hidden = false;
+        ddi.textContent = "重複 " + state.lastDedupeRemoved + " 曲を除きました";
+      } else { ddi.hidden = true; }
+    }
     $("playHero").hidden = false;
     $("moreActions").hidden = false;
     $("playTotalTime").textContent = fmtLong(sec);
@@ -936,7 +1012,7 @@
         '<div class="artist">' + (t.artist ? esc(t.artist) + " ・ " : "") + '<span class="src">' + esc(t.source) + '</span></div></div>' +
         '<span class="dur">' + (t.durationSec ? fmt(t.durationSec) : "約3:30") + '</span>' +
         '<a class="mini-link" href="https://music.youtube.com/search?q=' + q + '" target="_blank" rel="noopener">YT Music ↗</a>' +
-        '<button class="icon-btn" type="button" data-del-result="' + i + '" aria-label="結果から削除">✕</button>' +
+        '<button class="track-del" type="button" data-del-result="' + i + '" aria-label="結果から削除">✕</button>' +
       '</li>';
     }).join("");
 
@@ -945,6 +1021,10 @@
     var ytBtn = $("openYtBtn");
     var bbPlay = $("bbPlayBtn");
     if(ids.length){
+      state.resultPlayable = true;
+      var npb1 = $("noPlayBox"); if(npb1) npb1.hidden = true;
+      $("resultSub").textContent = "あとは再生ボタンを押すだけです。";
+      $("playHero").hidden = false;
       ytBtn.hidden = false;
       ytBtn.classList.remove("is-off");
       ytBtn.href = "https://www.youtube.com/watch_videos?video_ids=" + ids.slice(0,50).join(",");
@@ -958,15 +1038,15 @@
         ? "URLのある " + ids.length + " 曲は一括再生リンクに入っています。曲名だけの曲は、各曲の「YT Music ↗」から検索して開けます。" + (ids.length > 50 ? " 一括再生は先頭50曲までです。" : "")
         : "一括再生リンクは一時プレイリストとして YouTube で開きます（先頭50曲まで）。YouTube Music アプリで開く場合は、各曲の検索リンクも使えます。";
     } else {
-      ytBtn.hidden = false;
-      ytBtn.removeAttribute("href");
-      ytBtn.classList.add("is-off");
-      ytBtn.setAttribute("aria-label", "一括再生できる曲がありません");
+      state.resultPlayable = false;
+      // 押せない灰色の大きな再生ボタンは出さない。理由と次の行動を大きく1つだけ出す
+      $("playHero").hidden = true;
+      var npb2 = $("noPlayBox"); if(npb2) npb2.hidden = false;
+      $("resultSub").textContent = "曲にURLが含まれていないため、このままでは一括再生できません。";
       bbPlay.hidden = true;
       $("bbMixBtn").hidden = true;
       $("bbNextBtn").hidden = true;
-      notice.hidden = false;
-      notice.textContent = "曲名のみのリストのため一括再生リンクは作れません。各曲の「YT Music ↗」から開くか、曲のURLを含めて追加し直すと一括再生できるようになります。";
+      notice.hidden = true;
     }
     updateBottomBar();
   }
@@ -1279,16 +1359,28 @@
     else toast("すべて選択しました");
   });
 
+  function updateBalanceAvailability(){
+    var isShuffle = state.mode === "shuffle";
+    var row = $("balanceRow"), sw = $("balanceSwitch"), note = $("balanceNote");
+    if(row) row.classList.toggle("is-disabled", isShuffle);
+    if(sw){
+      sw.setAttribute("aria-disabled", String(isShuffle));
+      if(isShuffle) sw.setAttribute("tabindex", "-1"); else sw.removeAttribute("tabindex");
+    }
+    if(note) note.hidden = !isShuffle;
+  }
   document.querySelectorAll(".seg button").forEach(function(btn){
     btn.addEventListener("click", function(){
       document.querySelectorAll(".seg button").forEach(function(b){ b.classList.remove("sel"); });
       btn.classList.add("sel");
       state.mode = btn.getAttribute("data-mode");
+      updateBalanceAvailability();
     });
   });
 
   function bindSwitch(id, key){
     $(id).addEventListener("click", function(){
+      if(key === "balance" && state.mode === "shuffle") return;
       var now = $(id).getAttribute("aria-checked") === "true";
       $(id).setAttribute("aria-checked", String(!now));
       state[key] = !now;
@@ -1297,10 +1389,10 @@
   bindSwitch("dedupeSwitch","dedupe");
   bindSwitch("balanceSwitch","balance");
 
-  $("mixBtn").addEventListener("click", mix);
   $("bbMixBtn").addEventListener("click", mix);
   $("bbNextBtn").addEventListener("click", function(){ goToStep(2); });
-  $("toMixBtn").addEventListener("click", function(){ goToStep(2); });
+  var npAction = $("noPlayActionBtn");
+  if(npAction) npAction.addEventListener("click", function(){ goToStep(1); });
   document.querySelectorAll("[data-goto-step]").forEach(function(btn){
     btn.addEventListener("click", function(){ goToStep(+btn.getAttribute("data-goto-step")); });
   });
@@ -1367,6 +1459,26 @@
   });
   /* （ファイル書き出しは廃止：再生とアカウント保存に絞った） */
 
+  /* ---------- 削除の確認ダイアログ（ブラウザ標準confirmは使わない） ---------- */
+  var pendingDeletePlId = null;
+  function openDeleteConfirm(pl){
+    pendingDeletePlId = pl.id;
+    $("confirmSubText").textContent = "「" + pl.name + "」を一覧から削除します。この操作は元に戻せません。";
+    $("confirmOverlay").hidden = false;
+  }
+  function closeDeleteConfirm(){ pendingDeletePlId = null; $("confirmOverlay").hidden = true; }
+  $("confirmCancelBtn").addEventListener("click", closeDeleteConfirm);
+  $("confirmOverlay").addEventListener("click", function(e){ if(e.target === $("confirmOverlay")) closeDeleteConfirm(); });
+  $("confirmOkBtn").addEventListener("click", function(){
+    if(pendingDeletePlId == null){ closeDeleteConfirm(); return; }
+    var id2 = pendingDeletePlId;
+    state.playlists.forEach(function(pl){ if(pl.id===id2) delete savedSel[plKey(pl)]; });
+    state.playlists = state.playlists.filter(function(pl){ return pl.id!==id2; });
+    closeDeleteConfirm();
+    persistSelection();
+    renderPlaylists(); toast("プレイリストを削除しました");
+  });
+
   // delegation for dynamic buttons
   document.addEventListener("click", function(e){
     var t = e.target.closest ? e.target.closest("[data-toggle-pl],[data-del-pl],[data-del-track],[data-del-result]") : null;
@@ -1388,11 +1500,10 @@
       renderPlaylists();
     }
     if(t.hasAttribute("data-del-pl")){
-      var id2 = +t.getAttribute("data-del-pl");
-      state.playlists.forEach(function(p){ if(p.id===id2) delete savedSel[plKey(p)]; });
-      state.playlists = state.playlists.filter(function(p){ return p.id!==id2; });
-      persistSelection();
-      renderPlaylists(); toast("プレイリストを削除しました");
+      var delId = +t.getAttribute("data-del-pl");
+      var delTarget = null;
+      state.playlists.forEach(function(pl){ if(pl.id===delId) delTarget = pl; });
+      if(delTarget) openDeleteConfirm(delTarget);
     }
     if(t.hasAttribute("data-del-track")){
       var parts = t.getAttribute("data-del-track").split(":");
@@ -1405,6 +1516,7 @@
     }
   });
 
+  updateBalanceAvailability();
   renderPlaylists();
   renderResult();
 })();
