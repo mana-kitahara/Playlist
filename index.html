@@ -84,7 +84,7 @@
       }
       h1 .accent{color:var(--red)}
       .hero p.lead{margin:3px 0 0;max-width:720px;color:var(--muted);font-size:12.5px;line-height:1.5}
-      .hero-stats{display:inline-flex;gap:4px;flex-wrap:wrap;margin:8px 0 0;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+      .hero-stats{display:flex;gap:2px;margin:8px 0 0;align-items:stretch;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
       /* ヘッダー右上：ログイン状態＋設定（歯車） */
       .header-actions{margin-left:auto;display:flex;align-items:center;gap:7px;flex:none}
       .header-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:800;background:var(--surface);border:1px solid var(--line);color:var(--muted);white-space:nowrap;line-height:1.3}
@@ -98,10 +98,9 @@
       .settings-panel h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:9px}
       .settings-panel h2 .dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:none}
       .settings-panel .sub{margin:0 0 6px;font-size:12.5px;color:var(--muted)}
-      .stat{background:transparent;border:0;border-radius:0;padding:0;min-width:0;display:inline-flex;align-items:baseline;gap:4px}
-      .stat + .stat::before{content:"・";color:var(--muted);font-size:11px;margin-right:2px}
-      .stat b{display:inline;font-family:"Archivo",sans-serif;font-size:13.5px;line-height:1.2}
-      .stat span{font-size:11px;color:var(--muted);white-space:nowrap}
+      .stat{flex:1;background:transparent;border:0;border-radius:999px;padding:5px 4px;min-width:0;min-height:32px;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:12.5px;font-weight:800}
+      .stat b{display:inline;font-family:"Archivo",sans-serif;font-size:12.5px;font-weight:800;line-height:1.2}
+      .stat span{font-size:12.5px;font-weight:800;color:var(--muted);white-space:nowrap}
 
       /* 使い方（折りたたみ収納） */
       .howto{margin:20px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
@@ -248,6 +247,8 @@
         border:1.5px dashed var(--line);border-radius:var(--radius);padding:26px 18px;text-align:center;color:var(--muted);font-size:13.5px;
       }
       .empty b{color:var(--ink);display:block;font-size:15px;margin-bottom:5px}
+      .pl-card.loading{opacity:.75}
+      #selectAllRow .btn{width:100%}
 
       /* mix settings */
       .seg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
@@ -301,17 +302,6 @@
       .origin-box .onote{display:block;font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.55}
       #ytListWrap{margin-bottom:14px}
       #ytListWrap:empty{margin-bottom:0}
-      .yt-list{margin:2px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
-      .yt-item{display:flex;flex-direction:column;padding:8px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);cursor:pointer}
-      .yt-item.done{border-color:var(--green);background:color-mix(in srgb, var(--green) 8%, var(--surface));cursor:default}
-      .yt-item img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px;background:var(--surface-2);display:block}
-      .yt-thumb-ph{width:100%;aspect-ratio:1/1;border-radius:9px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:30px}
-      .yt-item .ym{min-width:0;padding:7px 2px 0}
-      .yt-item .yn{font-weight:900;font-size:13.5px;overflow-wrap:anywhere;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
-      .yt-item .yc{font-size:12px;color:var(--muted);margin-top:2px}
-      .yt-item .yc b{font-family:"Archivo",sans-serif;font-size:17px;color:var(--ink);margin-right:2px}
-      .yt-item .import-btn{width:100%;min-width:0;min-height:40px;border-radius:9px;font-size:12.5px;font-weight:900;padding:6px 8px;margin-top:8px}
-      .yt-item.done .import-btn{background:var(--surface-2);color:var(--muted)}
       .spin{
         width:16px;height:16px;border-radius:50%;flex:none;
         border:2.5px solid var(--line);border-top-color:var(--red);
@@ -396,9 +386,9 @@
         .code-grid{grid-template-columns:1fr}
         .card{padding:16px 14px}
         .hero{padding:10px 0 2px}
-        #playlistList,.yt-list{gap:8px}
-        .pl-card,.yt-item{padding:6px}
-        .pl-name,.yt-item .yn{font-size:12.5px}
+        #playlistList{gap:8px}
+        .pl-card{padding:6px}
+        .pl-name{font-size:12.5px}
         .header-badge{font-size:10.5px;padding:4px 8px}
         input[type="text"],textarea,select{font-size:16px} /* iOSの自動ズーム防止 */
       }
@@ -462,7 +452,7 @@
           <button class="step-tab" type="button" data-goto-step="3" id="tabPlay">3 再生</button>
         </nav>
         <div class="hero-stats" aria-label="現在の集計">
-          <div class="stat"><b id="statPlaylists">0</b><span>登録</span></div>
+          <div class="stat"><b id="statPlaylists">0</b><span>全リスト</span></div>
           <div class="stat"><b id="statTracks">0 曲</b><span>選択中</span></div>
           <div class="stat"><b id="statTime">0:00</b><span>合計</span></div>
         </div>
@@ -483,9 +473,18 @@
         <div>
           <div id="ytListWrap"></div>
 
+          <section class="card" aria-labelledby="listH">
+            <h2 id="listH"><span class="dot"></span>プレイリスト</h2>
+            <p class="sub">カードをタップで選択／解除。そのままミックスに使えます。前回選んだものは、次回も選ばれた状態で表示されます。</p>
+            <div id="playlistList"></div>
+            <div class="btn-row" id="selectAllRow" hidden>
+              <button class="btn" type="button" id="selectAllBtn">すべて選択</button>
+            </div>
+          </section>
+
           <section class="card" aria-labelledby="addH">
             <h2 id="addH"><span class="dot"></span>プレイリストを追加</h2>
-            <p class="sub">1行に1曲。YouTube / YouTube Music のURLを貼ると動画IDを自動で読み取ります。</p>
+            <p class="sub">手動で作ったリストも、上の一覧に並んで同じように選べます。1行に1曲。YouTube / YouTube Music のURLを貼ると動画IDを自動で読み取ります。</p>
 
             <label class="f" for="plName">プレイリスト名</label>
             <input type="text" id="plName" placeholder="例：米津玄師だけ / 夜ドライブ / 上げたいとき" autocomplete="off" />
@@ -498,13 +497,7 @@
               <button class="btn primary" id="addPlaylistBtn" type="button">＋ このリストを追加</button>
               <button class="btn ghost" id="loadSampleBtn" type="button">サンプルで試す</button>
             </div>
-            <p class="hint">※ ログイン連携を使わない場合の手動登録です。ログインすればプレイリストごと読み込めます。手動の場合は曲のURLや曲名リストを貼ってください。</p>
-          </section>
-
-          <section class="card" aria-labelledby="listH">
-            <h2 id="listH"><span class="dot"></span>登録したプレイリスト</h2>
-            <p class="sub">カードをタップで選択／解除。前回選んだものは、次回も選ばれた状態で表示されます。</p>
-            <div id="playlistList"></div>
+            <p class="hint">※ ログインしていない場合の手動追加です。追加したリストは上の一覧に表示されます。</p>
           </section>
           <div class="view-nav">
             <button class="btn primary" type="button" id="toMixBtn">次へ：ミックス設定を確認 →</button>
@@ -631,7 +624,7 @@
     pending: null,      // ログイン後に実行する処理 {scope, onOk}
     channelTitle: "",
     myPlaylists: [],    // APIから取得した一覧 {id,title,count,thumb}
-    importedIds: {}     // 取り込み済みのプレイリストID
+    importedIds: {}     // （旧仕様の名残・未使用）
   };
   function hasWriteScope(){ return auth.scope.indexOf(WRITE_SCOPE) > -1; }
 
@@ -737,16 +730,18 @@
   function renderPlaylists(){
     var box = $("playlistList");
     if(!state.playlists.length){
-      box.innerHTML = '<div class="empty"><b>まだ登録がありません</b>ログインしてプレイリストを読み込むか、<br>手動で追加、または「サンプルで試す」で操作感を確かめられます。</div>';
+      box.innerHTML = '<div class="empty"><b>まだプレイリストがありません</b>ログインするとあなたのプレイリストがここに並びます。<br>手動で追加、または「サンプルで試す」でも操作感を確かめられます。</div>';
     } else {
       box.innerHTML = state.playlists.map(function(pl){
-        var trackRows = pl.tracks.map(function(t,i){
+        var loaded = pl.tracksLoaded !== false;
+        var count = loaded ? pl.tracks.length : (pl.count || 0);
+        var trackRows = loaded ? pl.tracks.map(function(t,i){
           return '<li><span class="t">' + esc(t.title) + (t.artist ? ' <span class="a">／ ' + esc(t.artist) + '</span>' : '') + '</span>' +
                  '<span class="d">' + (t.durationSec ? fmt(t.durationSec) : "—") + '</span>' +
                  '<button class="icon-btn" type="button" data-del-track="' + pl.id + ':' + i + '" aria-label="この曲を削除" style="width:38px;height:38px;min-height:38px;font-size:12px">✕</button></li>';
-        }).join("");
+        }).join("") : "";
         var thumb = pl.thumb || "";
-        if(!thumb){
+        if(!thumb && loaded){
           for(var ti = 0; ti < pl.tracks.length; ti++){
             if(pl.tracks[ti].videoId){ thumb = "https://i.ytimg.com/vi/" + pl.tracks[ti].videoId + "/mqdefault.jpg"; break; }
           }
@@ -754,20 +749,26 @@
         var thumbHtml = thumb
           ? '<img class="pl-thumb" src="' + esc(thumb) + '" alt="" loading="lazy" />'
           : '<span class="pl-thumb pl-thumb-ph" aria-hidden="true">♪</span>';
-        return '<article class="pl-card ' + (pl.included ? "on" : "off") + '" style="--pl:' + pl.color + '" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
+        var badge = pl.loading ? "読込中…" : (pl.included ? "選択中" : "未選択");
+        var timeHtml = loaded
+          ? '<div class="pl-stats"><span class="pl-stat"><b>' + count + '</b><small>曲</small></span><span class="pl-stat">' + fmtLong(plSec(pl)) + '</span></div>' +
+            '<div class="pl-info"><span class="pl-badge">' + badge + '</span><span>' + fmt(plSec(pl)) + '</span></div>'
+          : '<div class="pl-stats"><span class="pl-stat"><b>' + count + '</b><small>曲</small></span></div>' +
+            '<div class="pl-info"><span class="pl-badge">' + badge + '</span><span>タップで選択</span></div>';
+        return '<article class="pl-card ' + (pl.included ? "on" : "off") + (pl.loading ? " loading" : "") + '" style="--pl:' + pl.color + '" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
           '<span class="pl-thumb-wrap">' + thumbHtml +
-            '<button class="pl-del-overlay" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">✕</button>' +
+            (pl.ytId ? '' : '<button class="pl-del-overlay" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">✕</button>') +
             '<span class="pl-check" aria-hidden="true">' + (pl.included ? "✓" : "") + '</span></span>' +
-          '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' +
-          '<div class="pl-stats"><span class="pl-stat"><b>' + pl.tracks.length + '</b><small>曲</small></span><span class="pl-stat">' + fmtLong(plSec(pl)) + '</span></div>' +
-          '<div class="pl-info"><span class="pl-badge">' + (pl.included ? "選択中" : "未選択") + '</span><span>' + fmt(plSec(pl)) + '</span></div></div>' +
-          (pl.tracks.length ? '<details class="pl-tracks-wrap"><summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:var(--muted);padding:6px 0 2px;list-style:none">曲一覧 ▾</summary><ul class="pl-tracks">' + trackRows + '</ul></details>' : '') +
+          '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' + timeHtml + '</div>' +
+          (loaded && pl.tracks.length ? '<details class="pl-tracks-wrap"><summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:var(--muted);padding:6px 0 2px;list-style:none">曲一覧 ▾</summary><ul class="pl-tracks">' + trackRows + '</ul></details>' : '') +
         '</article>';
       }).join("");
     }
+    var sar = $("selectAllRow");
+    if(sar) sar.hidden = !(state.playlists.length > 1 && state.playlists.some(function(p){ return !p.included; }));
     renderStats();
   }
-  function selectedPlaylists(){ return state.playlists.filter(function(p){ return p.included && p.tracks.length; }); }
+  function selectedPlaylists(){ return state.playlists.filter(function(p){ return p.included && p.tracksLoaded !== false && p.tracks.length; }); }
   function renderStats(){
     var sel = selectedPlaylists();
     var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
@@ -974,7 +975,7 @@
       $("bbNextBtn").hidden = true;
       notice.hidden = false;
       notice.textContent = ids.length < state.result.length
-        ? "URLから取り込んだ " + ids.length + " 曲は一括再生リンクに入っています。曲名だけの曲は、各曲の「YT Music ↗」から検索して開けます。" + (ids.length > 50 ? " 一括再生は先頭50曲までです。" : "")
+        ? "URLのある " + ids.length + " 曲は一括再生リンクに入っています。曲名だけの曲は、各曲の「YT Music ↗」から検索して開けます。" + (ids.length > 50 ? " 一括再生は先頭50曲までです。" : "")
         : "一括再生リンクは一時プレイリストとして YouTube で開きます（先頭50曲まで）。YouTube Music アプリで開く場合は、各曲の検索リンクも使えます。";
     } else {
       ytBtn.hidden = false;
@@ -985,7 +986,7 @@
       $("bbMixBtn").hidden = true;
       $("bbNextBtn").hidden = true;
       notice.hidden = false;
-      notice.textContent = "曲名のみのリストのため一括再生リンクは作れません。各曲の「YT Music ↗」から開くか、曲のURLを含めて登録し直すと一括再生できるようになります。";
+      notice.textContent = "曲名のみのリストのため一括再生リンクは作れません。各曲の「YT Music ↗」から開くか、曲のURLを含めて追加し直すと一括再生できるようになります。";
     }
     updateBottomBar();
   }
@@ -1116,34 +1117,46 @@
     var wrap = $("ytListWrap");
     if(!auth.myPlaylists.length){
       wrap.innerHTML = '<p class="hint">プレイリストがありません。YouTube Music アプリでリストを作ると、ここに表示されます。</p>';
+      renderPlaylists();
       return;
     }
-    wrap.innerHTML = '<ul class="yt-list">' + auth.myPlaylists.map(function(p){
-      var done = !!auth.importedIds[p.id];
-      var thumbHtml = p.thumb ? '<img src="' + esc(p.thumb) + '" alt="" loading="lazy" />' : '<span class="yt-thumb-ph" aria-hidden="true">♪</span>';
-      return '<li class="yt-item' + (done ? " done" : "") + '"' + (done ? "" : ' data-import-pl="' + esc(p.id) + '" title="タップで取り込む"') + '>' +
-        thumbHtml +
-        '<div class="ym"><div class="yn">' + esc(p.title) + '</div><div class="yc"><b>' + p.count + '</b>曲' + (done ? ' ・ 取込済み' : '') + '</div></div>' +
-        '<button class="btn import-btn' + (done ? "" : " primary") + '" type="button" data-import-pl="' + esc(p.id) + '"' + (done ? " disabled" : "") + '>' + (done ? "取込済み ✓" : "取り込む") + '</button>' +
-      '</li>';
-    }).join("") + '</ul>' +
-    '<div class="btn-row"><button class="btn" type="button" id="importAllBtn">すべて取り込む</button></div>';
-    var allBtn = $("importAllBtn");
-    if(allBtn) allBtn.addEventListener("click", function(){
-      var rest = auth.myPlaylists.filter(function(p){ return !auth.importedIds[p.id]; });
-      if(!rest.length){ toast("すべて取り込み済みです"); return; }
-      importSequential(rest, 0);
+    wrap.innerHTML = "";
+    // YouTubeのプレイリストを、統一グリッド（state.playlists）へそのまま並べる。
+    // 曲の中身は「選択されたとき」に初めて読み込む（取り込みという段階はなし）。
+    var toLoad = [];
+    auth.myPlaylists.forEach(function(p){
+      var existing = null;
+      state.playlists.forEach(function(pl){ if(pl.ytId === p.id) existing = pl; });
+      if(existing){
+        existing.name = p.title; existing.count = p.count; existing.thumb = p.thumb || existing.thumb || "";
+        if(existing.included && existing.tracksLoaded === false && !existing.loading) toLoad.push(existing);
+      } else {
+        var entry = {
+          id: nextId(), name: p.title, key: p.id, ytId: p.id, thumb: p.thumb || "",
+          count: p.count, tracks: [], tracksLoaded: false, loading: false,
+          included: restoredIncluded(p.id, false),
+          color: PALETTE[state.playlists.length % PALETTE.length]
+        };
+        state.playlists.push(entry);
+        if(entry.included) toLoad.push(entry);
+      }
     });
+    renderPlaylists();
+    // 前回選んでいたものは、曲を読み込んで選択状態を復元する
+    loadSequential(toLoad, 0, true);
   }
-  function importSequential(list, i){
-    if(i >= list.length){ toast("すべてのプレイリストを取り込みました"); return; }
-    importPlaylist(list[i], function(){ importSequential(list, i + 1); });
+  function loadSequential(list, i, silent){
+    if(i >= list.length) return;
+    loadPlaylistTracks(list[i], function(){ loadSequential(list, i + 1, silent); }, silent);
   }
-  function importPlaylist(meta, done){
+  function loadPlaylistTracks(pl, done, silent){
+    if(pl.tracksLoaded !== false || pl.loading){ if(done) done(); return; }
+    pl.loading = true;
+    renderPlaylists();
     ensureToken(READ_SCOPE, function(){
       var tracks = [], ids = [];
       function page(token){
-        var q = "playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=" + encodeURIComponent(meta.id) + (token ? "&pageToken=" + encodeURIComponent(token) : "");
+        var q = "playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=" + encodeURIComponent(pl.ytId) + (token ? "&pageToken=" + encodeURIComponent(token) : "");
         return apiFetch(q).then(function(data){
           (data.items || []).forEach(function(it){
             var vid = it.contentDetails && it.contentDetails.videoId;
@@ -1168,24 +1181,33 @@
               var map = {};
               (vd.items || []).forEach(function(v){ map[v.id] = parseIsoDuration(v.contentDetails && v.contentDetails.duration); });
               tracks.forEach(function(t){ if(map[t.videoId]) t.durationSec = map[t.videoId]; });
-            }).catch(function(){ /* 時間が取れなくても取り込みは続行 */ });
+            }).catch(function(){ /* 時間が取れなくても選択は続行 */ });
           });
         });
         return chain;
       }).then(function(){
-        if(!tracks.length){ toast("「" + meta.title + "」に取り込める曲がありませんでした"); if(done) done(); return; }
-        state.playlists.push({
-          id: nextId(), name: meta.title, key: meta.id, thumb: meta.thumb || "", included: restoredIncluded(meta.id, true),
-          color: PALETTE[state.playlists.length % PALETTE.length], tracks: tracks
-        });
+        pl.loading = false;
+        if(!tracks.length){
+          pl.included = false;
+          persistSelection();
+          renderPlaylists();
+          if(!silent) toast("「" + pl.name + "」に曲がありませんでした");
+          if(done) done(); return;
+        }
+        pl.tracks = tracks;
+        pl.tracksLoaded = true;
+        pl.count = tracks.length;
+        pl.included = true;
         persistSelection();
-        auth.importedIds[meta.id] = true;
         renderPlaylists();
-        renderMyPlaylists();
-        toast("「" + meta.title + "」を取り込みました（" + tracks.length + " 曲）");
+        if(!silent) toast("「" + pl.name + "」を選択しました（" + tracks.length + " 曲）");
         if(done) done();
       }).catch(function(err){
-        toast(err.message || "取り込みに失敗しました");
+        pl.loading = false;
+        pl.included = false;
+        persistSelection();
+        renderPlaylists();
+        toast(err.message || "曲の読み込みに失敗しました");
         if(done) done();
       });
     });
@@ -1240,7 +1262,7 @@
     if(!name) name = "プレイリスト " + (state.playlists.length + 1);
     var newKey = "name:" + name;
     state.playlists.push({
-      id: nextId(), name: name, key: newKey, included: restoredIncluded(newKey, true),
+      id: nextId(), name: name, key: newKey, included: restoredIncluded(newKey, true), tracksLoaded: true,
       color: PALETTE[state.playlists.length % PALETTE.length], tracks: tracks
     });
     $("plName").value = ""; $("plTracks").value = "";
@@ -1253,13 +1275,28 @@
     sampleData().forEach(function(s){
       var sKey = "name:" + s.name;
       state.playlists.push({
-        id: nextId(), name: s.name, key: sKey, included: restoredIncluded(sKey, true),
+        id: nextId(), name: s.name, key: sKey, included: restoredIncluded(sKey, true), tracksLoaded: true,
         color: PALETTE[state.playlists.length % PALETTE.length], tracks: s.tracks
       });
     });
     persistSelection();
     renderPlaylists();
     toast("サンプルを3つ追加しました。そのままミックスできます");
+  });
+
+  /* すべて選択：未選択のものをまとめて選ぶ（YouTubeのものは曲を読み込みながら） */
+  $("selectAllBtn").addEventListener("click", function(){
+    var rest = state.playlists.filter(function(p){ return !p.included; });
+    if(!rest.length){ toast("すべて選択済みです"); return; }
+    var needLoad = [];
+    rest.forEach(function(p){
+      if(p.tracksLoaded === false){ needLoad.push(p); }
+      else { p.included = true; }
+    });
+    persistSelection();
+    renderPlaylists();
+    if(needLoad.length) loadSequential(needLoad, 0, true);
+    else toast("すべて選択しました");
   });
 
   document.querySelectorAll(".seg button").forEach(function(btn){
@@ -1328,8 +1365,12 @@
       google.accounts.oauth2.revoke(auth.token, function(){});
     }
     auth.token = null; auth.scope = ""; auth.myPlaylists = []; auth.importedIds = {}; auth.channelTitle = "";
+    state.playlists = state.playlists.filter(function(p){ return !p.ytId; });
+    state.result = [];
     setBadge(false, "未ログイン");
     $("ytListWrap").innerHTML = "";
+    renderPlaylists();
+    renderResult();
     showGate();
     toast("ログアウトしました");
   }
@@ -1348,17 +1389,21 @@
 
   // delegation for dynamic buttons
   document.addEventListener("click", function(e){
-    var t = e.target.closest ? e.target.closest("[data-toggle-pl],[data-del-pl],[data-del-track],[data-del-result],[data-import-pl]") : null;
+    var t = e.target.closest ? e.target.closest("[data-toggle-pl],[data-del-pl],[data-del-track],[data-del-result]") : null;
     if(!t) return;
-    if(t.hasAttribute("data-import-pl")){
-      var pid = t.getAttribute("data-import-pl");
-      var meta = auth.myPlaylists.find(function(p){ return p.id === pid; });
-      if(meta && !auth.importedIds[pid]){ if(t.tagName === "BUTTON"){ t.disabled = true; t.textContent = "取込中…"; } importPlaylist(meta); }
-    }
     if(t.hasAttribute("data-toggle-pl")){
-      if(e.target.closest && e.target.closest(".pl-tracks-wrap") && !e.target.closest("[data-del-track]")) return;
+      if(e.target.closest && (e.target.closest("[data-del-pl]") || e.target.closest("[data-del-track]"))) return;
+      if(e.target.closest && e.target.closest(".pl-tracks-wrap")) return;
       var id1 = +t.getAttribute("data-toggle-pl");
-      state.playlists.forEach(function(p){ if(p.id===id1) p.included = !p.included; });
+      var target = null;
+      state.playlists.forEach(function(p){ if(p.id===id1) target = p; });
+      if(!target || target.loading) return;
+      if(target.tracksLoaded === false && !target.included){
+        // YouTubeのプレイリストは、初めて選ぶときに曲を読み込む
+        loadPlaylistTracks(target);
+        return;
+      }
+      target.included = !target.included;
       persistSelection();
       renderPlaylists();
     }
