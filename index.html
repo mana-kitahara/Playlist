@@ -24,6 +24,7 @@
         --red-soft:#fdeceb;
         --green:#0e7a55;
         --seek-rest-edge:#c9c9c5;
+        --seek-rest-fill:#c2c2bd;
         --radius:14px;
         --radius-sm:9px;
         color-scheme:light;
@@ -42,6 +43,7 @@
           --red-soft:#2b1512;
           --green:#3ecf9a;
           --seek-rest-edge:#8a8a86;
+          --seek-rest-fill:#555552;
           color-scheme:dark;
         }
       }
@@ -402,7 +404,7 @@
       #viewPlay .card{padding:10px 12px 12px;margin-bottom:8px}
       #viewPlay .card .sub{margin-bottom:6px}
       .player-section{margin:0 auto;max-width:560px;border:0;border-radius:0;background:transparent;padding:2px 2px 0}
-      .artwork-wrap{position:relative;width:70%;margin:0 auto;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:var(--surface-2)}
+      .artwork-wrap{position:relative;width:85%;margin:0 auto;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:var(--surface-2)}
       .artwork-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;color:var(--muted)}
       .artwork-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
       /* 埋め込みプレイヤー本体は音声再生専用：画面外に配置して一切見せず、タップもできないようにする（display:noneにはしない） */
@@ -414,17 +416,17 @@
       /* 下部固定バーに隠れないための余白（1 選ぶ画面） */
       .bottom-spacer{height:calc(110px + env(safe-area-inset-bottom))}
       .dur-unknown{font-size:11.5px}
-      .now-playing{margin:10px auto 0;text-align:left;width:70%;max-width:70%;box-sizing:border-box}
+      .now-playing{margin:10px auto 0;text-align:left;width:85%;max-width:85%;box-sizing:border-box}
       .now-playing-pos{font-size:12px;font-weight:800;color:var(--red);letter-spacing:.02em;text-align:center;margin-top:6px;line-height:1.4}
-      .now-playing-title{font-size:20px;font-weight:800;line-height:1.35;overflow-wrap:anywhere;max-width:100%}
+      .now-playing-title{font-size:17px;font-weight:800;line-height:1.35;overflow-wrap:anywhere;max-width:100%}
       .now-playing-artist{font-size:13px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere;line-height:1.4;max-width:100%}
       .seek-wrap{margin-top:6px}
       .seek-bar{width:100%;accent-color:var(--red);height:24px;min-height:24px;cursor:pointer;background:transparent;padding:0;margin:0;display:block;-webkit-appearance:none;appearance:none;--seek-pct:0%}
       .seek-bar:disabled{opacity:.4;cursor:not-allowed}
       /* シークバーの縁は2色：到達済みは赤線、未到達はグレー線。縁は border-box 側のグラデーション、中身は padding-box 側で別に塗る */
-      .seek-bar::-webkit-slider-runnable-track{height:8px;border:1.5px solid transparent;border-radius:999px;background:linear-gradient(to right,var(--red) 0%,var(--red) var(--seek-pct),var(--surface-2) var(--seek-pct),var(--surface-2) 100%) padding-box,linear-gradient(to right,var(--red) 0%,var(--red) var(--seek-pct),var(--seek-rest-edge) var(--seek-pct),var(--seek-rest-edge) 100%) border-box}
+      .seek-bar::-webkit-slider-runnable-track{height:8px;border:1.5px solid transparent;border-radius:999px;background:linear-gradient(to right,var(--red) 0%,var(--red) var(--seek-pct),var(--seek-rest-fill) var(--seek-pct),var(--seek-rest-fill) 100%) padding-box,linear-gradient(to right,var(--red) 0%,var(--red) var(--seek-pct),var(--seek-rest-edge) var(--seek-pct),var(--seek-rest-edge) 100%) border-box}
       .seek-bar::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--red);border:2px solid var(--red);margin-top:-5.5px;cursor:pointer}
-      .seek-bar::-moz-range-track{height:8px;border:1.5px solid var(--seek-rest-edge);border-radius:999px;background:var(--surface-2);box-sizing:border-box}
+      .seek-bar::-moz-range-track{height:8px;border:1.5px solid var(--seek-rest-edge);border-radius:999px;background:var(--seek-rest-fill);box-sizing:border-box}
       .seek-bar::-moz-range-progress{height:8px;border:1.5px solid var(--red);border-radius:999px;background:var(--red);box-sizing:border-box}
       .seek-bar::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--red);border:2px solid var(--red);cursor:pointer}
       .seek-times{display:flex;justify-content:space-between;font-family:"Archivo",sans-serif;font-size:11.5px;color:var(--muted);margin-top:-2px;line-height:1.3}
