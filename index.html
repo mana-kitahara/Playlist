@@ -157,6 +157,7 @@
       .card h2{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:9px}
       .card h2 .dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:none}
       .card .sub{margin:0 0 14px;font-size:13px;color:var(--muted)}
+      .card h2#listH,.card h2#mixH{margin-bottom:14px}
       label.f{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}
       label.f:first-of-type{margin-top:0}
       input[type="text"],textarea,select{
@@ -596,7 +597,6 @@
 
           <section class="card" aria-labelledby="listH">
             <h2 id="listH"><span class="dot"></span>プレイリスト</h2>
-            <p class="sub">カードをタップで選択／解除。そのままミックスに使えます。前回選んだものは、次回も選ばれた状態で表示されます。</p>
             <div id="playlistList"></div>
             <div class="btn-row" id="selectAllRow" hidden>
               <button class="btn" type="button" id="selectAllBtn">すべて選択</button>
@@ -628,21 +628,20 @@
       <div class="view" id="viewMix" hidden>
         <section class="card" aria-labelledby="mixH">
           <h2 id="mixH"><span class="dot"></span>ミックス設定</h2>
-          <p class="sub">おすすめが選ばれています。そのまま下のボタンへ進んでOKです。変えたいときだけ触ってください。</p>
 
           <div class="seg" role="group" aria-label="並び順">
-            <button type="button" data-mode="append"><b>そのままつなげる</b><span>リスト順に全部つなぐ</span></button>
-            <button type="button" data-mode="interleave" class="sel"><b>交互ミックス <span class="rec">おすすめ</span></b><span>各リストから1曲ずつ順番に</span></button>
-            <button type="button" data-mode="spread"><b>アーティスト分散</b><span>同じ歌手が続かないよう並べ替え</span></button>
-            <button type="button" data-mode="shuffle"><b>シャッフル</b><span>全体をランダムに</span></button>
+            <button type="button" data-mode="append"><b>そのままつなげる</b></button>
+            <button type="button" data-mode="interleave" class="sel"><b>交互ミックス <span class="rec">おすすめ</span></b></button>
+            <button type="button" data-mode="spread"><b>アーティスト分散</b></button>
+            <button type="button" data-mode="shuffle"><b>シャッフル</b></button>
           </div>
 
           <div class="switch-row">
-            <div class="txt"><b>重複する曲を取り除く <span class="rec">おすすめ</span></b><span>同じ動画・同じ「曲名＋アーティスト」は1曲にまとめます</span></div>
+            <div class="txt"><b>重複する曲を取り除く <span class="rec">おすすめ</span></b></div>
             <button class="switch" id="dedupeSwitch" type="button" role="switch" aria-checked="true" aria-label="重複する曲を取り除く"></button>
           </div>
           <div class="switch-row" id="balanceRow">
-            <div class="txt"><b>各プレイリストを均等に使う</b><span>交互・分散のとき、曲数が多いリストに偏らないよう調整します</span><span class="balance-note" id="balanceNote" hidden>シャッフルでは使われません</span></div>
+            <div class="txt"><b>各プレイリストを均等に使う</b><span>※シャッフル再生には適用されません</span></div>
             <button class="switch" id="balanceSwitch" type="button" role="switch" aria-checked="false" aria-label="各プレイリストを均等に使う"></button>
           </div>
 
@@ -1839,13 +1838,12 @@
 
   function updateBalanceAvailability(){
     var isShuffle = state.mode === "shuffle";
-    var row = $("balanceRow"), sw = $("balanceSwitch"), note = $("balanceNote");
+    var row = $("balanceRow"), sw = $("balanceSwitch");
     if(row) row.classList.toggle("is-disabled", isShuffle);
     if(sw){
       sw.setAttribute("aria-disabled", String(isShuffle));
       if(isShuffle) sw.setAttribute("tabindex", "-1"); else sw.removeAttribute("tabindex");
     }
-    if(note) note.hidden = !isShuffle;
   }
   document.querySelectorAll(".seg button").forEach(function(btn){
     btn.addEventListener("click", function(){
