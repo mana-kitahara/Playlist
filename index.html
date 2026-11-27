@@ -396,10 +396,17 @@
       .artwork-wrap{position:relative;width:100%;aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:var(--surface-2)}
       .artwork-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:76px;color:var(--muted)}
       .artwork-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-      /* 埋め込み動画は再生用にアートワーク右下へ小さく配置（ピクチャ・イン・ピクチャ風） */
-      .player-frame-wrap{position:absolute;right:10px;bottom:10px;width:132px;aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.45);z-index:2}
+      /* 埋め込み動画は再生専用：アートワークの下に16:9のまま小さく独立配置（重ねない） */
+      .player-frame-wrap{position:relative;width:min(260px,72%);aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.25);margin:12px auto 0}
       .player-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
       .player-frame-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;text-align:center;padding:6px}
+      /* 操作列：各ボタンの下に小さな文字ラベル */
+      .ctrl-unit{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none}
+      .ctrl-label{font-size:10.5px;font-weight:700;color:var(--muted);line-height:1.2;white-space:nowrap}
+      .ctrl-unit:has(.loop-toggle[aria-pressed="true"]) .ctrl-label{color:var(--red)}
+      /* 下部固定バーに隠れないための余白（1 選ぶ画面） */
+      .bottom-spacer{height:calc(110px + env(safe-area-inset-bottom))}
+      .dur-unknown{font-size:11.5px}
       .now-playing{margin-top:18px;text-align:left}
       .now-playing-pos{font-size:12.5px;font-weight:800;color:var(--red);letter-spacing:.02em;text-align:center;margin-top:16px}
       .now-playing-title{font-size:22px;font-weight:900;line-height:1.4;overflow-wrap:anywhere}
@@ -569,15 +576,15 @@
 
             <label class="f" for="plTracks">曲リスト</label>
             <textarea id="plTracks" placeholder="Lemon - 米津玄師 (4:16)&#10;https://music.youtube.com/watch?v=xxxxxxxxxxx&#10;曲名 | アーティスト | https://youtu.be/xxxxxxxxxxx"></textarea>
-            <p class="hint">書式：<code>曲名 - アーティスト (再生時間)</code>／<code>曲名 | アーティスト | URL</code>／URLだけでもOK。再生時間は省略可（未入力の曲は平均3分30秒で計算）。</p>
+            <p class="hint">書式：<code>曲名 - アーティスト (再生時間)</code>／<code>曲名 | アーティスト | URL</code>／URLだけでもOK。再生時間は省略可（未入力の曲は「長さ不明」として扱い、合計時間には含めません）。</p>
 
             <div class="btn-row">
               <button class="btn primary" id="addPlaylistBtn" type="button">＋ このリストを追加</button>
-              <button class="btn ghost" id="loadSampleBtn" type="button">サンプルで試す</button>
             </div>
             <p class="hint">※ ログインしていない場合の手動追加です。追加したリストは上の一覧に表示されます。</p>
             </div>
           </details>
+          <div class="bottom-spacer" aria-hidden="true"></div>
         </div>
       </div>
 
@@ -620,10 +627,10 @@
             <div class="artwork-wrap">
               <span class="artwork-ph" id="artworkPh" aria-hidden="true">♪</span>
               <img class="artwork-img" id="nowArtwork" alt="" hidden>
-              <div class="player-frame-wrap">
-                <div id="ytPlayer"></div>
-                <div class="player-frame-ph" id="playerPlaceholder">再生ボタンで開始</div>
-              </div>
+            </div>
+            <div class="player-frame-wrap">
+              <div id="ytPlayer"></div>
+              <div class="player-frame-ph" id="playerPlaceholder">再生ボタンで開始</div>
             </div>
             <div class="now-playing" aria-live="polite">
               <div class="now-playing-title" id="nowPlayingTitle">—</div>
@@ -634,17 +641,17 @@
               <div class="seek-times"><span id="seekCur">0:00</span><span id="seekDur">0:00</span></div>
             </div>
             <div class="player-controls">
-              <button class="player-btn" id="playerShuffleBtn" type="button" aria-label="もう一度シャッフル" title="もう一度シャッフル"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg></button>
-              <button class="player-btn" id="playerPrevBtn" type="button" aria-label="前の曲へ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2.2v14H6zM19 5v14L9.5 12z"/></svg></button>
-              <button class="player-btn main" id="playerPlayBtn" type="button" aria-label="再生／一時停止"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
-              <button class="player-btn" id="playerNextBtn" type="button" aria-label="次の曲へ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.8 5H18v14h-2.2zM5 5v14l9.5-7z"/></svg></button>
-              <button class="loop-toggle" id="playerLoopBtn" type="button" aria-pressed="false" aria-label="ループ再生のオン／オフ" title="ループ再生">
+              <div class="ctrl-unit"><button class="player-btn" id="playerShuffleBtn" type="button" aria-label="シャッフルし直す" title="シャッフル"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg></button><span class="ctrl-label">シャッフル</span></div>
+              <div class="ctrl-unit"><button class="player-btn" id="playerPrevBtn" type="button" aria-label="前の曲へ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2.2v14H6zM19 5v14L9.5 12z"/></svg></button><span class="ctrl-label">前へ</span></div>
+              <div class="ctrl-unit"><button class="player-btn main" id="playerPlayBtn" type="button" aria-label="再生／一時停止"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button><span class="ctrl-label" id="playBtnLabel">再生</span></div>
+              <div class="ctrl-unit"><button class="player-btn" id="playerNextBtn" type="button" aria-label="次の曲へ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.8 5H18v14h-2.2zM5 5v14l9.5-7z"/></svg></button><span class="ctrl-label">次へ</span></div>
+              <div class="ctrl-unit"><button class="loop-toggle" id="playerLoopBtn" type="button" aria-pressed="false" aria-label="ループ再生のオン／オフ" title="ループ再生">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
-              </button>
+              </button><span class="ctrl-label">ループ</span></div>
             </div>
             <div class="now-playing-pos" id="nowPlayingPos">1曲目 / 全0曲</div>
             <div class="play-summary" id="playHero" hidden>
-              <b class="play-total" id="playTotalTime">約0分</b><br>
+              <b class="play-total" id="playTotalTime">合計 0:00</b><br>
               <span class="play-sub" id="playTotalSub"></span>
             </div>
             <p class="player-note" id="playerNote" hidden></p>
@@ -662,7 +669,6 @@
               <a class="btn" id="openYtBtn" href="#" target="_blank" rel="noopener">YouTubeで開く（一括再生・先頭50曲まで）</a>
               <button class="btn" id="saveToAccountBtn" type="button" disabled>アカウントに保存</button>
               <button class="btn" id="copyBtn" type="button" disabled>リストをコピー</button>
-              <button class="btn ghost" id="reshuffleBtn" type="button" disabled>もう一度シャッフル</button>
             </div>
           </details>
           <div class="btn-row">
@@ -688,7 +694,6 @@
   "use strict";
 
   var ACCENT_COLOR = "#e62117"; // 選択表現は全カード共通のアクセントカラー1色に統一
-  var AVG_SEC = 210; // 再生時間未入力の曲の平均
 
   var state = {
     playlists: [],   // {id,name,color,included,tracks:[{title,artist,videoId,durationSec}]}
@@ -736,7 +741,7 @@
     ytPlayer = new YT.Player("ytPlayer", {
       width: "100%", height: "100%",
       videoId: vid,
-      playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3 },
       events: {
         onReady: function(){ ytPlayerReady = true; updatePlayerUI(); },
         onStateChange: onYtStateChange
@@ -785,6 +790,7 @@
       if(seekEl0){ seekEl0.value = 0; seekEl0.max = 0; seekEl0.disabled = true; }
       seekTrackIdx = -1;
       if(playBtn){ playBtn.innerHTML = PLAY_ICON; playBtn.disabled = true; }
+      var plLbl0 = $("playBtnLabel"); if(plLbl0) plLbl0.textContent = "再生";
       var pb0 = $("playerPrevBtn"), nb0 = $("playerNextBtn");
       if(pb0) pb0.disabled = true; if(nb0) nb0.disabled = true;
       return;
@@ -809,12 +815,13 @@
     if(seekTrackIdx !== idx){
       seekTrackIdx = idx;
       var seekEl1 = $("seekBar"), sc1 = $("seekCur"), sd1 = $("seekDur");
-      var durInit = t.durationSec || 0;
+      var durInit = trackUnknown(t) ? 0 : t.durationSec;
       if(seekEl1){ seekEl1.disabled = false; seekEl1.value = 0; seekEl1.max = durInit; }
       if(sc1) sc1.textContent = "0:00";
-      if(sd1) sd1.textContent = durInit ? fmt(durInit) : "0:00";
+      if(sd1) sd1.textContent = durInit ? fmt(durInit) : "長さ不明";
     }
     if(playBtn){ playBtn.disabled = false; playBtn.innerHTML = playerIsPlaying ? PAUSE_ICON : PLAY_ICON; playBtn.setAttribute("aria-label", playerIsPlaying ? "一時停止" : "再生"); }
+    var plLbl = $("playBtnLabel"); if(plLbl) plLbl.textContent = playerIsPlaying ? "一時停止" : "再生";
     var pb = $("playerPrevBtn"), nb = $("playerNextBtn");
     if(pb) pb.disabled = playerLoop ? playerQueue.length <= 1 : playerPos <= 0;
     if(nb) nb.disabled = playerLoop ? playerQueue.length <= 1 : playerPos >= playerQueue.length - 1;
@@ -879,13 +886,11 @@
     if(h>0) return h + ":" + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
     return m + ":" + String(s).padStart(2,"0");
   }
-  function fmtLong(sec){
-    var h = Math.floor(sec/3600), m = Math.round((sec%3600)/60);
-    if(h>0) return "約" + h + "時間" + (m? m+"分" : "");
-    return "約" + m + "分";
-  }
-  function trackSec(t){ return t.durationSec || AVG_SEC; }
+  // 長さが分かる曲だけを合計する。分からない曲は 0 として数えず「長さ不明」として別に数える（仮の長さは入れない）
+  function trackSec(t){ return (typeof t.durationSec === "number" && t.durationSec > 0) ? t.durationSec : 0; }
+  function trackUnknown(t){ return !(typeof t.durationSec === "number" && t.durationSec > 0); }
   function plSec(pl){ return pl.tracks.reduce(function(a,t){return a+trackSec(t);},0); }
+  function plUnknown(pl){ return pl.tracks.reduce(function(a,t){return a+(trackUnknown(t)?1:0);},0); }
   function esc(str){
     return String(str==null?"":str).replace(/[&<>"']/g,function(c){
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
@@ -950,30 +955,11 @@
     return text.split(/\r?\n/).map(parseLine).filter(Boolean);
   }
 
-  /* ---------- samples ---------- */
-  function sampleData(){
-    function T(title,artist,dur){ return {title:title,artist:artist,videoId:null,durationSec:dur}; }
-    return [
-      { name:"米津玄師だけ（サンプル）", tracks:[
-        T("Lemon","米津玄師",256), T("LOSER","米津玄師",244), T("ピースサイン","米津玄師",238),
-        T("灰色と青","米津玄師",294), T("打上花火","DAOKO × 米津玄師",289), T("KICK BACK","米津玄師",193)
-      ]},
-      { name:"あいみょんだけ（サンプル）", tracks:[
-        T("マリーゴールド","あいみょん",321), T("裸の心","あいみょん",267), T("君はロックを聴かない","あいみょん",250),
-        T("ハルノヒ","あいみょん",324), T("愛を伝えたいだとか","あいみょん",245)
-      ]},
-      { name:"夜ドライブ（サンプル）", tracks:[
-        T("Pretender","Official髭男dism",326), T("Subtitle","Official髭男dism",297),
-        T("夜に駆ける","YOASOBI",258), T("ドライフラワー","優里",345), T("Lemon","米津玄師",256)
-      ]}
-    ];
-  }
-
   /* ---------- rendering: playlists ---------- */
   function renderPlaylists(){
     var box = $("playlistList");
     if(!state.playlists.length){
-      box.innerHTML = '<div class="empty"><b>まだプレイリストがありません</b>ログインするとあなたのプレイリストがここに並びます。<br>手動で追加、または「サンプルで試す」でも操作感を確かめられます。</div>';
+      box.innerHTML = '<div class="empty"><b>まだプレイリストがありません</b>ログインするとあなたのプレイリストがここに並びます。<br>下の「プレイリストを手動で追加」から手で追加もできます。</div>';
     } else {
       box.innerHTML = state.playlists.map(function(pl){
         var loaded = pl.tracksLoaded !== false;
@@ -1005,9 +991,13 @@
     var sel = selectedPlaylists();
     var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
     var sec = sel.reduce(function(a,p){return a+plSec(p);},0);
+    var unknown = sel.reduce(function(a,p){return a+plUnknown(p);},0);
     $("statPlaylists").textContent = state.playlists.filter(function(p){ return p.included; }).length;
     $("statTracks").textContent = tracks + " 曲";
-    $("statTime").textContent = fmt(sec);
+    // 合計は「長さが分かる曲だけ」の合計。不明な曲があるときはその旨が分かる表記にする
+    $("statTime").textContent = unknown > 0 ? fmt(sec) + "（判明分）" : fmt(sec);
+    var stEl = $("statTime");
+    if(stEl) stEl.title = unknown > 0 ? (unknown + "曲は長さ不明のため合計に含めていません") : "";
     updateBottomBar();
   }
   function updateBottomBar(){
@@ -1127,6 +1117,9 @@
     }
     if(n === 3 && !state.result.length){ toast("先にミックスを作成してください"); n = selectedPlaylists().length ? 2 : 1; }
     currentStep = n;
+    // 画面（ステップ）を切り替えたら歯車の設定パネルは自動で閉じる
+    var sp = $("settingsPanel"); if(sp) sp.hidden = true;
+    var sb2 = $("settingsBtn"); if(sb2) sb2.setAttribute("aria-expanded", "false");
     $("viewSelect").hidden = n !== 1;
     $("viewMix").hidden = n !== 2;
     $("viewPlay").hidden = n !== 3;
@@ -1140,11 +1133,38 @@
 
   /* ---------- rendering: result ---------- */
   function resultSec(){ return state.result.reduce(function(a,t){return a+trackSec(t);},0); }
+  function resultUnknown(){ return state.result.reduce(function(a,t){return a+(trackUnknown(t)?1:0);},0); }
+  // まとめ表示は1か所に統一：合計は「分かる曲だけ」の合計として1行で出す
+  function updatePlaySummary(){
+    var totalEl = $("playTotalTime"), subEl = $("playTotalSub");
+    if(!totalEl || !state.result.length) return;
+    var sec = resultSec(), unknown = resultUnknown();
+    totalEl.textContent = "合計 " + fmt(sec) + (unknown > 0 ? "（分かる曲のみ）" : "");
+    if(subEl){
+      var parts = [state.result.length + " 曲"];
+      if(unknown > 0) parts.push(unknown + "曲は長さ不明");
+      if(state.lastDedupeRemoved > 0) parts.push("重複 " + state.lastDedupeRemoved + " 曲を除きました");
+      subEl.textContent = parts.join(" ・ ");
+    }
+  }
+  // 再生中にプレイヤーから実測の長さが取れたら、その曲と合計へ反映する
+  function applyMeasuredDuration(resultIdx, durSec){
+    if(resultIdx < 0 || !state.result[resultIdx] || !(durSec > 0)) return;
+    var rounded = Math.round(durSec);
+    if(state.result[resultIdx].durationSec === rounded) return;
+    state.result[resultIdx].durationSec = rounded;
+    updatePlaySummary();
+    var li = document.querySelector('#resultList li[data-result-idx="' + resultIdx + '"]');
+    if(li){
+      var durEl = li.querySelector(".dur");
+      if(durEl){ durEl.textContent = fmt(rounded); durEl.classList.remove("dur-unknown"); }
+    }
+    renderStats();
+  }
   function renderResult(){
     var list = $("resultList"), notice = $("resultNotice");
     var has = state.result.length > 0;
     $("copyBtn").disabled = !has;
-    $("reshuffleBtn").disabled = !has;
     $("saveToAccountBtn").disabled = !has;
 
     if(!has){
@@ -1165,11 +1185,9 @@
       updateBottomBar();
       return;
     }
-    var sec = resultSec();
     $("playHero").hidden = false;
     $("moreActions").hidden = false;
-    $("playTotalTime").textContent = fmtLong(sec);
-    $("playTotalSub").textContent = state.result.length + " 曲 ・ 合計 " + fmt(sec) + (state.lastDedupeRemoved > 0 ? " ・ 重複 " + state.lastDedupeRemoved + " 曲を除きました" : "");
+    updatePlaySummary();
 
     rebuildPlayerQueue(false);
     var tf1 = $("tracklistFold"); if(tf1) tf1.hidden = false;
@@ -1183,7 +1201,7 @@
         '<div class="tt"><div class="title">' + esc(t.title) + '</div>' +
         '<div class="artist">' + (t.artist ? esc(t.artist) + " ・ " : "") + '<span class="src">' + esc(t.source) + '</span></div>' +
         (playable ? '' : '<span class="unplayable-badge">再生対象外（URLなし）</span>') + '</div>' +
-        '<span class="dur">' + (t.durationSec ? fmt(t.durationSec) : "約3:30") + '</span>' +
+        '<span class="dur' + (trackUnknown(t) ? ' dur-unknown' : '') + '">' + (trackUnknown(t) ? "長さ不明" : fmt(t.durationSec)) + '</span>' +
         '<a class="mini-link" href="https://music.youtube.com/search?q=' + q + '" target="_blank" rel="noopener">YT Music ↗</a>' +
         '<button class="track-del" type="button" data-del-result="' + i + '" aria-label="結果から削除">✕</button>' +
       '</li>';
@@ -1239,7 +1257,7 @@
 
   function resultAsText(){
     return state.result.map(function(t,i){
-      return (i+1) + ". " + t.title + (t.artist ? " - " + t.artist : "") + " (" + fmt(trackSec(t)) + ")";
+      return (i+1) + ". " + t.title + (t.artist ? " - " + t.artist : "") + " (" + (trackUnknown(t) ? "長さ不明" : fmt(t.durationSec)) + ")";
     }).join("\n");
   }
   /* ---------- YouTube API 連携 ---------- */
@@ -1517,19 +1535,6 @@
     toast("「" + name + "」を追加しました（" + tracks.length + " 曲）");
   });
 
-  $("loadSampleBtn").addEventListener("click", function(){
-    sampleData().forEach(function(s){
-      var sKey = "name:" + s.name;
-      state.playlists.push({
-        id: nextId(), name: s.name, key: sKey, included: restoredIncluded(sKey, true), tracksLoaded: true,
-        color: ACCENT_COLOR, tracks: s.tracks
-      });
-    });
-    persistSelection();
-    renderPlaylists();
-    toast("サンプルを3つ追加しました。そのままミックスできます");
-  });
-
   /* すべて選択：未選択のものをまとめて選ぶ（YouTubeのものは曲を読み込みながら） */
   $("selectAllBtn").addEventListener("click", function(){
     var rest = state.playlists.filter(function(p){ return !p.included; });
@@ -1644,6 +1649,8 @@
       if(typeof dur === "number" && dur > 0){
         sb.max = Math.floor(dur);
         var sd = $("seekDur"); if(sd) sd.textContent = fmt(dur);
+        // 実測の長さを、その曲の長さと合計時間へ反映する
+        applyMeasuredDuration(currentResultIdx(), dur);
       }
       if(typeof cur === "number"){
         sb.value = Math.floor(cur);
@@ -1710,10 +1717,6 @@
     toast("ログアウトしました");
   }
   $("settingsLogoutBtn").addEventListener("click", doLogout);
-  $("reshuffleBtn").addEventListener("click", function(){
-    state.result = shuffleArr(state.result);
-    renderResult(); toast("結果をシャッフルしました");
-  });
   $("copyBtn").addEventListener("click", function(){
     var text = resultAsText();
     if(navigator.clipboard && navigator.clipboard.writeText){
