@@ -184,7 +184,6 @@
       #playlistList{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
       #playlistList .empty{grid-column:1/-1}
       .pl-card{
-        --pl:var(--line);
         border:1.5px solid var(--line);border-radius:14px;
         padding:8px;background:var(--bg);cursor:pointer;
         overflow:hidden;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,opacity .18s ease;
@@ -192,9 +191,9 @@
       .pl-card.off{opacity:.62;filter:saturate(.45)}
       .pl-card.on{
         opacity:1;filter:none;
-        border-color:var(--pl);
-        background:color-mix(in srgb, var(--pl) 10%, var(--surface));
-        box-shadow:0 4px 16px color-mix(in srgb, var(--pl) 24%, transparent);
+        border-color:var(--red);
+        background:color-mix(in srgb, var(--red) 10%, var(--surface));
+        box-shadow:0 4px 16px color-mix(in srgb, var(--red) 24%, transparent);
       }
       .pl-strip{display:none}
       .pl-check{
@@ -202,13 +201,13 @@
         border:2px solid rgba(255,255,255,.9);background:rgba(0,0,0,.35);color:#fff;
         display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;line-height:1;
       }
-      .pl-card.on .pl-check{background:var(--pl);border-color:#fff}
+      .pl-card.on .pl-check{background:var(--red);border-color:#fff}
       .pl-meta{min-width:0;padding:7px 2px 1px}
       .pl-name{font-weight:900;font-size:13.5px;line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
       .pl-info{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px}
       .pl-thumb-wrap{position:relative;display:block;width:100%;aspect-ratio:1/1}
       .pl-thumb{width:100%;height:100%;border-radius:9px;object-fit:cover;display:block;background:var(--surface-2)}
-      .pl-thumb-ph{display:flex;align-items:center;justify-content:center;background:var(--pl);color:#fff;font-size:34px}
+      .pl-thumb-ph{display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--muted);font-size:34px}
       .pl-thumb-wrap .pl-check{position:absolute;right:5px;bottom:5px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
       .pl-del-overlay{
         position:absolute;top:5px;right:5px;width:28px;height:28px;min-height:28px;border-radius:50%;
@@ -228,7 +227,7 @@
         border-radius:12px;padding:10px 14px;font-size:14px;font-weight:900;cursor:pointer;min-height:58px;min-width:92px;
         display:flex;align-items:center;justify-content:center;line-height:1.3;text-align:center;
       }
-      .pl-card.on .toggle-btn.on{background:var(--pl);color:#fff;border-color:var(--pl)}
+      .pl-card.on .toggle-btn.on{background:var(--red);color:#fff;border-color:var(--red)}
       .pl-del{align-self:center}
       .icon-btn{
         width:44px;height:44px;min-height:44px;border-radius:9px;border:1px solid var(--line);
@@ -344,7 +343,7 @@
       .no{
         font-family:"Archivo",sans-serif;font-weight:700;color:var(--muted);font-size:13px;width:26px;flex:none;text-align:right;
       }
-      .bar{width:5px;align-self:stretch;border-radius:3px;flex:none}
+      .bar{width:5px;align-self:stretch;border-radius:3px;flex:none;background:var(--red)}
       .tt{flex:1;min-width:0}
       .tt .title{font-weight:700;font-size:14.5px;overflow-wrap:anywhere;line-height:1.4}
       .tt .artist{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
@@ -579,7 +578,7 @@
 (function(){
   "use strict";
 
-  var PALETTE = ["#e62117","#0e7a55","#1d6fd1","#d97706","#b03a8c","#0e7490","#65a30d","#9333ea"];
+  var ACCENT_COLOR = "#e62117"; // 選択表現は全カード共通のアクセントカラー1色に統一
   var AVG_SEC = 210; // 再生時間未入力の曲の平均
 
   var state = {
@@ -737,7 +736,7 @@
           ? '<img class="pl-thumb" src="' + esc(thumb) + '" alt="" loading="lazy" />'
           : '<span class="pl-thumb pl-thumb-ph" aria-hidden="true">♪</span>';
         var countHtml = '<div class="pl-stats"><span class="pl-stat"><b>' + count + '</b><small>曲</small></span></div>';
-        return '<article class="pl-card ' + (pl.included ? "on" : "off") + (pl.loading ? " loading" : "") + '" style="--pl:' + pl.color + '" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
+        return '<article class="pl-card ' + (pl.included ? "on" : "off") + (pl.loading ? " loading" : "") + '" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
           '<span class="pl-thumb-wrap">' + thumbHtml +
             (pl.ytId ? '' : '<button class="pl-del-overlay" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">✕</button>') +
             '<span class="pl-check" aria-hidden="true">' + (pl.included ? "✓" : "") + '</span></span>' +
@@ -932,7 +931,7 @@
       var q = encodeURIComponent((t.title + " " + (t.artist||"")).trim());
       return '<li>' +
         '<span class="no">' + (i+1) + '</span>' +
-        '<span class="bar" style="background:' + t.color + '"></span>' +
+        '<span class="bar"></span>' +
         '<div class="tt"><div class="title">' + esc(t.title) + '</div>' +
         '<div class="artist">' + (t.artist ? esc(t.artist) + " ・ " : "") + '<span class="src">' + esc(t.source) + '</span></div></div>' +
         '<span class="dur">' + (t.durationSec ? fmt(t.durationSec) : "約3:30") + '</span>' +
@@ -1116,7 +1115,7 @@
           id: nextId(), name: p.title, key: p.id, ytId: p.id, thumb: p.thumb || "",
           count: p.count, tracks: [], tracksLoaded: false, loading: false,
           included: restoredIncluded(p.id, false),
-          color: PALETTE[state.playlists.length % PALETTE.length]
+          color: ACCENT_COLOR
         };
         state.playlists.push(entry);
         if(entry.included) toLoad.push(entry);
@@ -1244,7 +1243,7 @@
     var newKey = "name:" + name;
     state.playlists.push({
       id: nextId(), name: name, key: newKey, included: restoredIncluded(newKey, true), tracksLoaded: true,
-      color: PALETTE[state.playlists.length % PALETTE.length], tracks: tracks
+      color: ACCENT_COLOR, tracks: tracks
     });
     $("plName").value = ""; $("plTracks").value = "";
     persistSelection();
@@ -1257,7 +1256,7 @@
       var sKey = "name:" + s.name;
       state.playlists.push({
         id: nextId(), name: s.name, key: sKey, included: restoredIncluded(sKey, true), tracksLoaded: true,
-        color: PALETTE[state.playlists.length % PALETTE.length], tracks: s.tracks
+        color: ACCENT_COLOR, tracks: s.tracks
       });
     });
     persistSelection();
