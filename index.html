@@ -412,8 +412,14 @@
       .now-playing-title{font-size:22px;font-weight:900;line-height:1.4;overflow-wrap:anywhere}
       .now-playing-artist{font-size:14px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
       .seek-wrap{margin-top:14px}
-      .seek-bar{width:100%;accent-color:var(--red);height:30px;min-height:30px;cursor:pointer;background:transparent;padding:0;margin:0;display:block}
+      .seek-bar{width:100%;accent-color:var(--red);height:30px;min-height:30px;cursor:pointer;background:transparent;padding:0;margin:0;display:block;-webkit-appearance:none;appearance:none;--seek-pct:0%}
       .seek-bar:disabled{opacity:.4;cursor:not-allowed}
+      /* シークバー：進んだ部分は赤く塗り、バー全体の縁（枠線）とつまみの縁も同じ赤にする */
+      .seek-bar::-webkit-slider-runnable-track{height:8px;border:1.5px solid var(--red);border-radius:999px;background:linear-gradient(to right,var(--red) 0%,var(--red) var(--seek-pct),var(--surface-2) var(--seek-pct),var(--surface-2) 100%)}
+      .seek-bar::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--red);border:2px solid var(--red);box-shadow:0 0 0 1.5px var(--red);margin-top:-6.5px;cursor:pointer}
+      .seek-bar::-moz-range-track{height:8px;border:1.5px solid var(--red);border-radius:999px;background:var(--surface-2)}
+      .seek-bar::-moz-range-progress{height:8px;border-radius:999px;background:var(--red)}
+      .seek-bar::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--red);border:2px solid var(--red);box-shadow:0 0 0 1.5px var(--red);cursor:pointer}
       .seek-times{display:flex;justify-content:space-between;font-family:"Archivo",sans-serif;font-size:12px;color:var(--muted);margin-top:-3px}
       .player-controls{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:8px;flex-wrap:nowrap}
       .player-btn{width:52px;height:52px;min-width:52px;min-height:52px;border-radius:50%;border:0;background:transparent;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:20px;padding:0;flex:none}
@@ -613,8 +619,7 @@
       </div>
 
       <div class="view" id="viewPlay" hidden>
-        <section class="card" aria-labelledby="resultH">
-          <h2 id="resultH"><span class="dot"></span>再生リスト</h2>
+        <section class="card">
           <p class="sub" id="resultSub">まだミックスしていません。「設定」画面でミックスを作成してください。</p>
 
           <div class="no-play-box" id="noPlayBox" hidden>
@@ -731,6 +736,12 @@
     else document.head.appendChild(tag);
   })();
   function currentResultIdx(){ return playerQueue.length ? playerQueue[Math.min(playerPos, playerQueue.length - 1)] : -1; }
+  function syncSeekFill(sb){
+    if(!sb) return;
+    var max = +sb.max || 0, v = +sb.value || 0;
+    var pct = max > 0 ? Math.max(0, Math.min(100, v / max * 100)) : 0;
+    sb.style.setProperty("--seek-pct", pct + "%");
+  }
   function createYtPlayer(){
     if(!ytApiReady || ytPlayer || !playerQueue.length) return;
     var firstIdx = currentResultIdx();
@@ -787,7 +798,7 @@
       if(artistEl) artistEl.textContent = "";
       if(artEl){ artEl.hidden = true; artEl.removeAttribute("src"); }
       if(artPh) artPh.hidden = false;
-      if(seekEl0){ seekEl0.value = 0; seekEl0.max = 0; seekEl0.disabled = true; }
+      if(seekEl0){ seekEl0.value = 0; seekEl0.max = 0; seekEl0.disabled = true; syncSeekFill(seekEl0); }
       seekTrackIdx = -1;
       if(playBtn){ playBtn.innerHTML = PLAY_ICON; playBtn.disabled = true; }
       var plLbl0 = $("playBtnLabel"); if(plLbl0) plLbl0.textContent = "再生";
@@ -816,7 +827,7 @@
       seekTrackIdx = idx;
       var seekEl1 = $("seekBar"), sc1 = $("seekCur"), sd1 = $("seekDur");
       var durInit = trackUnknown(t) ? 0 : t.durationSec;
-      if(seekEl1){ seekEl1.disabled = false; seekEl1.value = 0; seekEl1.max = durInit; }
+      if(seekEl1){ seekEl1.disabled = false; seekEl1.value = 0; seekEl1.max = durInit; syncSeekFill(seekEl1); }
       if(sc1) sc1.textContent = "0:00";
       if(sd1) sd1.textContent = durInit ? fmt(durInit) : "長さ不明";
     }
@@ -1141,7 +1152,7 @@
     var sec = resultSec(), unknown = resultUnknown();
     totalEl.textContent = "合計 " + fmt(sec) + (unknown > 0 ? "（分かる曲のみ）" : "");
     if(subEl){
-      var parts = [state.result.length + " 曲"];
+      var parts = [];
       if(unknown > 0) parts.push(unknown + "曲は長さ不明");
       if(state.lastDedupeRemoved > 0) parts.push("重複 " + state.lastDedupeRemoved + " 曲を除きました");
       subEl.textContent = parts.join(" ・ ");
@@ -1632,6 +1643,7 @@
     seekBarEl.addEventListener("pointerdown", function(){ seekDragging = true; });
     seekBarEl.addEventListener("input", function(){
       seekDragging = true;
+      syncSeekFill(seekBarEl);
       var sc = $("seekCur"); if(sc) sc.textContent = fmt(+seekBarEl.value || 0);
     });
     seekBarEl.addEventListener("change", function(){
@@ -1654,6 +1666,7 @@
       }
       if(typeof cur === "number"){
         sb.value = Math.floor(cur);
+        syncSeekFill(sb);
         var sc2 = $("seekCur"); if(sc2) sc2.textContent = fmt(cur);
       }
     }catch(e){ /* プレイヤー未準備時は無視 */ }
