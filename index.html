@@ -299,7 +299,9 @@
       }
       .origin-box .btn{width:100%;margin-top:9px}
       .origin-box .onote{display:block;font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.55}
-      .yt-list{margin:10px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
+      #ytListWrap{margin-bottom:14px}
+      #ytListWrap:empty{margin-bottom:0}
+      .yt-list{margin:2px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
       .yt-item{display:flex;flex-direction:column;padding:8px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);cursor:pointer}
       .yt-item.done{border-color:var(--green);background:color-mix(in srgb, var(--green) 8%, var(--surface));cursor:default}
       .yt-item img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px;background:var(--surface-2);display:block}
@@ -454,6 +456,11 @@
             </button>
           </div>
         </div>
+        <nav class="steps-nav" id="stepsNav" aria-label="進み方">
+          <button class="step-tab is-active" type="button" data-goto-step="1">1 選ぶ</button>
+          <button class="step-tab" type="button" data-goto-step="2">2 設定</button>
+          <button class="step-tab" type="button" data-goto-step="3" id="tabPlay">3 再生</button>
+        </nav>
         <div class="hero-stats" aria-label="現在の集計">
           <div class="stat"><b id="statPlaylists">0</b><span>登録</span></div>
           <div class="stat"><b id="statTracks">0 曲</b><span>選択中</span></div>
@@ -472,39 +479,9 @@
         </div>
       </section>
 
-      <nav class="steps-nav" id="stepsNav" aria-label="進み方">
-        <button class="step-tab is-active" type="button" data-goto-step="1">1 選ぶ</button>
-        <button class="step-tab" type="button" data-goto-step="2">2 設定</button>
-        <button class="step-tab" type="button" data-goto-step="3" id="tabPlay">3 再生</button>
-      </nav>
-
       <div class="view" id="viewSelect">
         <div>
-          <section class="card acct-card" aria-labelledby="acctH">
-            <div class="acct-head" style="margin-bottom:0">
-              <h2 id="acctH" style="margin:0"><span class="dot"></span>YouTube連携</h2>
-              <span class="acct-badge" id="acctBadge"><span class="st-dot"></span><span id="acctBadgeText">未ログイン</span></span>
-            </div>
-
-            <div id="loginArea">
-              <div class="acct-inline" style="margin-top:8px">
-                <input type="text" id="clientIdInput" placeholder="クライアントID（初回のみ）" autocomplete="off" autocapitalize="none" spellcheck="false" style="flex:1;min-width:160px" aria-label="クライアントID（初回のみ）" />
-                <button class="btn primary" id="loginBtn" type="button">
-                  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#e62117"/></svg>
-                  ログイン
-                </button>
-              </div>
-            </div>
-
-            <div id="accountArea" hidden>
-              <div class="acct-inline" style="margin-top:6px">
-                <p class="sub" id="accountInfo"></p>
-                <button class="btn" id="reloadPlBtn" type="button">↻ 再読み込み</button>
-                <button class="btn ghost" id="logoutBtn" type="button">ログアウト</button>
-              </div>
-              <div id="ytListWrap"></div>
-            </div>
-          </section>
+          <div id="ytListWrap"></div>
 
           <section class="card" aria-labelledby="addH">
             <h2 id="addH"><span class="dot"></span>プレイリストを追加</h2>
@@ -521,7 +498,7 @@
               <button class="btn primary" id="addPlaylistBtn" type="button">＋ このリストを追加</button>
               <button class="btn ghost" id="loadSampleBtn" type="button">サンプルで試す</button>
             </div>
-            <p class="hint">※ ログイン連携を使わない場合の手動登録です。ログインすれば上のカードからプレイリストごと読み込めます。手動の場合は曲のURLや曲名リストを貼ってください。</p>
+            <p class="hint">※ ログイン連携を使わない場合の手動登録です。ログインすればプレイリストごと読み込めます。手動の場合は曲のURLや曲名リストを貼ってください。</p>
           </section>
 
           <section class="card" aria-labelledby="listH">
@@ -760,7 +737,7 @@
   function renderPlaylists(){
     var box = $("playlistList");
     if(!state.playlists.length){
-      box.innerHTML = '<div class="empty"><b>まだ登録がありません</b>アカウント連携のカードで読み込むか、<br>手動で追加、または「サンプルで試す」で操作感を確かめられます。</div>';
+      box.innerHTML = '<div class="empty"><b>まだ登録がありません</b>ログインしてプレイリストを読み込むか、<br>手動で追加、または「サンプルで試す」で操作感を確かめられます。</div>';
     } else {
       box.innerHTML = state.playlists.map(function(pl){
         var trackRows = pl.tracks.map(function(t,i){
@@ -1023,9 +1000,6 @@
     return !!(window.google && google.accounts && google.accounts.oauth2);
   }
   function setBadge(ok, text){
-    var b = $("acctBadge");
-    b.classList.toggle("ok", !!ok);
-    $("acctBadgeText").textContent = text;
     var hb = $("headerBadge");
     if(hb){
       hb.classList.toggle("ok", !!ok);
@@ -1048,7 +1022,7 @@
     window.scrollTo(0, 0);
   }
   function requestToken(scope, onOk){
-    if(!auth.clientId){ toast("先にクライアントIDを入力してください"); $("clientIdInput").focus(); return; }
+    if(!auth.clientId){ toast("先にクライアントIDを入力してください"); var cidEl = $("settingsClientIdInput") || $("gateClientIdInput"); if(cidEl) cidEl.focus(); return; }
     if(!gisReady()){ toast("Googleログインの読み込み中です。数秒待ってからもう一度押してください"); return; }
     auth.pending = { scope: scope, onOk: onOk };
     // スコープごとにクライアントを作り直す（読み取り用／保存用で許可が違うため）
@@ -1069,8 +1043,6 @@
     auth.token = resp.access_token;
     auth.scope = resp.scope || (pending ? pending.scope : READ_SCOPE);
     setBadge(true, "ログイン中");
-    $("loginArea").hidden = true;
-    $("accountArea").hidden = false;
     enterApp();
     if(pending && pending.onOk) pending.onOk();
     else loadMyPlaylists();
@@ -1087,8 +1059,6 @@
       if(res.status === 401){
         auth.token = null;
         setBadge(false, "要ログイン");
-        $("accountArea").hidden = true;
-        $("loginArea").hidden = false;
         throw new Error("ログインの有効期限が切れました。もう一度ログインしてください");
       }
       return res.json().then(function(data){
@@ -1115,7 +1085,6 @@
     // チャンネル名（表示用）
     apiFetch("channels?part=snippet&mine=true").then(function(ch){
       if(ch.items && ch.items[0]) auth.channelTitle = ch.items[0].snippet.title || "";
-      $("accountInfo").textContent = auth.channelTitle ? ("ログイン中：" + auth.channelTitle + " さんのアカウント") : "ログイン中です";
     }).catch(function(){ /* 表示用なので失敗しても続行 */ });
 
     var all = [];
@@ -1323,7 +1292,7 @@
   /* ---------- ログインまわりのイベント ---------- */
   function syncClientId(value, exceptEl){
     auth.clientId = value;
-    [$("clientIdInput"), $("gateClientIdInput"), $("settingsClientIdInput")].forEach(function(el){
+    [$("gateClientIdInput"), $("settingsClientIdInput")].forEach(function(el){
       if(el && el !== exceptEl) el.value = value;
     });
     try{ localStorage.setItem(LS_KEY, value); }catch(e){ /* 保存できなくても動作は続行 */ }
@@ -1336,8 +1305,7 @@
     requestToken(READ_SCOPE, loadMyPlaylists);
   }
   try{ auth.clientId = localStorage.getItem(LS_KEY) || ""; }catch(e){ auth.clientId = ""; }
-  if(auth.clientId){ $("clientIdInput").value = auth.clientId; $("gateClientIdInput").value = auth.clientId; $("settingsClientIdInput").value = auth.clientId; }
-  $("clientIdInput").addEventListener("change", function(){ syncClientId($("clientIdInput").value.trim(), $("clientIdInput")); });
+  if(auth.clientId){ $("gateClientIdInput").value = auth.clientId; $("settingsClientIdInput").value = auth.clientId; }
   $("gateClientIdInput").addEventListener("change", function(){ syncClientId($("gateClientIdInput").value.trim(), $("gateClientIdInput")); });
   $("settingsClientIdInput").addEventListener("change", function(){ syncClientId($("settingsClientIdInput").value.trim(), $("settingsClientIdInput")); });
   /* ヘッダーの歯車：設定パネルの開閉 */
@@ -1349,27 +1317,23 @@
     if(open) window.scrollTo(0, 0);
   });
   $("settingsReloadBtn").addEventListener("click", function(){ ensureToken(READ_SCOPE, loadMyPlaylists); });
-  $("settingsLogoutBtn").addEventListener("click", function(){ $("logoutBtn").click(); });
-  $("loginBtn").addEventListener("click", function(){ startLogin($("clientIdInput")); });
   $("gateLoginBtn").addEventListener("click", function(){ startLogin($("gateClientIdInput")); });
   $("guestBtn").addEventListener("click", function(){
     setBadge(false, "ゲスト利用中");
     enterApp();
     toast("ログインせずに使えます。曲は「プレイリストを追加」から手で貼ってください");
   });
-  $("logoutBtn").addEventListener("click", function(){
+  function doLogout(){
     if(auth.token && window.google && google.accounts && google.accounts.oauth2){
       google.accounts.oauth2.revoke(auth.token, function(){});
     }
     auth.token = null; auth.scope = ""; auth.myPlaylists = []; auth.importedIds = {}; auth.channelTitle = "";
     setBadge(false, "未ログイン");
-    $("accountArea").hidden = true;
-    $("loginArea").hidden = false;
     $("ytListWrap").innerHTML = "";
     showGate();
     toast("ログアウトしました");
-  });
-  $("reloadPlBtn").addEventListener("click", function(){ ensureToken(READ_SCOPE, loadMyPlaylists); });
+  }
+  $("settingsLogoutBtn").addEventListener("click", doLogout);
   $("reshuffleBtn").addEventListener("click", function(){
     state.result = shuffleArr(state.result);
     renderResult(); toast("結果をシャッフルしました");
