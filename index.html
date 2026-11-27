@@ -362,10 +362,6 @@
       .no-play-box .np-title{font-size:19px;font-weight:900;line-height:1.45;margin:0 0 8px}
       .no-play-box .np-reason{font-size:14px;color:var(--ink-2);line-height:1.65;margin:0 0 16px}
       .no-play-box .btn{width:100%;min-height:56px;font-size:16px;border-radius:11px}
-      .dedupe-info{
-        background:var(--red-soft);border:1px solid var(--line);border-radius:var(--radius-sm);
-        padding:11px 14px;font-size:14px;font-weight:800;margin-top:12px;text-align:center;
-      }
       /* 手動追加アコーディオン */
       .manual-add{padding:0;overflow:hidden}
       .manual-add>summary{
@@ -379,16 +375,6 @@
       .manual-add[open ]>summary .chev{transform:rotate(180deg)}
       .manual-add .ma-body{padding:0 18px 18px}
       .manual-add .ma-body .sub{margin:0 0 14px;font-size:13px;color:var(--muted)}
-      /* 確認ダイアログ */
-      .confirm-overlay{
-        position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55);
-        display:flex;align-items:center;justify-content:center;padding:20px;
-      }
-      .confirm-box{background:var(--surface);color:var(--ink);border-radius:14px;padding:20px;width:100%;max-width:380px;box-shadow:0 16px 40px rgba(0,0,0,.3)}
-      .confirm-box p{margin:0 0 6px;font-size:16px;font-weight:800;line-height:1.5}
-      .confirm-box .c-sub{font-size:13px;color:var(--muted);font-weight:500;margin:0 0 16px}
-      .confirm-box .btn-row{margin-top:0}
-      .confirm-box .btn{flex:1;min-height:52px}
       .btn.danger{background:var(--red);border-color:var(--red);color:#fff}
       /* 無効化されたスイッチ行 */
       .switch-row.is-disabled .txt{opacity:.55}
@@ -405,36 +391,31 @@
       }
       .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-      /* サイト内プレイヤー（動画枠は再生が続く最小のコンパクト表示） */
+      /* サイト内プレイヤー（動画枠は大きな16:9表示） */
       .player-section{margin-top:14px;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg);padding:14px}
-      .player-frame-wrap{position:relative;width:100%;height:56px;background:#000;border-radius:8px;overflow:hidden}
+      .player-frame-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden}
       .player-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-      .player-frame-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;text-align:center;padding:8px 12px}
+      .player-frame-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;text-align:center;padding:12px 16px}
       .now-playing{margin-top:14px;text-align:center}
       .now-playing-pos{font-size:12.5px;font-weight:800;color:var(--red);letter-spacing:.02em}
       .now-playing-title{font-size:17px;font-weight:900;line-height:1.45;margin-top:2px;overflow-wrap:anywhere}
       .now-playing-artist{font-size:12.5px;color:var(--muted)}
-      .player-controls{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px}
+      .player-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}
       .player-btn{width:60px;height:60px;min-width:60px;min-height:60px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:20px;padding:0}
       .player-btn:disabled{opacity:.35;cursor:not-allowed}
       .player-btn.main{width:84px;height:84px;min-width:84px;min-height:84px;background:var(--red);border-color:var(--red);color:#fff;font-size:30px;box-shadow:0 8px 22px color-mix(in srgb, var(--red) 38%, transparent)}
       .player-btn.main:active{transform:scale(.96)}
       .player-btn.main svg{width:36px;height:36px;display:block;fill:#fff;flex:none}
       .player-btn svg{width:24px;height:24px;display:block;fill:currentColor;flex:none}
-      /* ループ切替 */
-      .loop-row{display:flex;justify-content:center;margin-top:12px}
+      /* ループ切替（アイコンのみのボタン。オン／オフは色で分かる） */
       .loop-toggle{
-        display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 18px;
-        border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink-2);
-        font-weight:800;font-size:13.5px;cursor:pointer;
+        width:60px;height:60px;min-width:60px;min-height:60px;border-radius:50%;
+        border:1px solid var(--line);background:var(--surface);color:var(--ink);
+        cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;flex:none;
       }
-      .loop-toggle svg{width:20px;height:20px;display:block;fill:currentColor;flex:none}
-      .loop-toggle .loop-state{
-        font-size:11.5px;font-weight:900;line-height:1;border-radius:999px;padding:4px 9px;
-        background:var(--surface-2);color:var(--muted);letter-spacing:.04em;
-      }
+      .loop-toggle svg{width:24px;height:24px;display:block;fill:currentColor;flex:none}
       .loop-toggle[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
-      .loop-toggle[aria-pressed="true"] .loop-state{background:#fff;color:var(--red)}
+      .loop-toggle:active{transform:scale(.96)}
       /* 曲一覧の折りたたみ */
       .tracklist-fold{margin-top:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);overflow:hidden}
       .tracklist-fold>summary{
@@ -626,8 +607,6 @@
             <button class="btn primary" id="noPlayActionBtn" type="button">選び直す（URL付きのリストを使う）</button>
           </div>
 
-          <div class="dedupe-info" id="dedupeInfo" hidden></div>
-
           <div class="play-summary" id="playHero" hidden>
             <b class="play-total" id="playTotalTime">約0分</b><br>
             <span class="play-sub" id="playTotalSub"></span>
@@ -647,15 +626,11 @@
               <button class="player-btn" id="playerPrevBtn" type="button" aria-label="前の曲へ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2.2v14H6zM19 5v14L9.5 12z"/></svg></button>
               <button class="player-btn main" id="playerPlayBtn" type="button" aria-label="再生／一時停止"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
               <button class="player-btn" id="playerNextBtn" type="button" aria-label="次の曲へ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.8 5H18v14h-2.2zM5 5v14l9.5-7z"/></svg></button>
-            </div>
-            <div class="loop-row">
-              <button class="loop-toggle" id="playerLoopBtn" type="button" aria-pressed="false" aria-label="ループ再生のオン／オフ">
+              <button class="loop-toggle" id="playerLoopBtn" type="button" aria-pressed="false" aria-label="ループ再生のオン／オフ" title="ループ再生">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
-                <span>ループ</span>
-                <span class="loop-state" id="loopState">オフ</span>
               </button>
             </div>
-            <p class="player-note" id="playerNote"></p>
+            <p class="player-note" id="playerNote" hidden></p>
           </div>
 
           <details class="tracklist-fold" id="tracklistFold" hidden>
@@ -674,8 +649,7 @@
             </div>
           </details>
           <div class="btn-row">
-            <button class="btn ghost" type="button" data-goto-step="2">← 設定に戻る</button>
-            <button class="btn ghost" type="button" data-goto-step="1">選び直す</button>
+            <button class="btn ghost" type="button" data-goto-step="2">← もどる</button>
           </div>
         </section>
       </div>
@@ -688,17 +662,6 @@
       <button class="btn primary" id="bbNextBtn" type="button">次へ：設定を確認 →</button>
       <button class="btn primary" id="bbMixBtn" type="button" hidden>次へ：ミックスを作成 →</button>
       <a class="btn primary" id="bbPlayBtn" href="#" target="_blank" rel="noopener" hidden>▶ YouTubeで再生する</a>
-    </div>
-
-    <div class="confirm-overlay" id="confirmOverlay" hidden>
-      <div class="confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
-        <p id="confirmTitle">プレイリストを削除しますか？</p>
-        <p class="c-sub" id="confirmSubText"></p>
-        <div class="btn-row">
-          <button class="btn ghost" id="confirmCancelBtn" type="button">キャンセル</button>
-          <button class="btn danger" id="confirmOkBtn" type="button">削除する</button>
-        </div>
-      </div>
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1144,7 +1107,6 @@
       state.resultPlayable = false;
       rebuildPlayerQueue(false);
       var npb0 = $("noPlayBox"); if(npb0) npb0.hidden = true;
-      var ddi0 = $("dedupeInfo"); if(ddi0) ddi0.hidden = true;
       var ps0 = $("playerSection"); if(ps0) ps0.hidden = true;
       $("playHero").hidden = true;
       $("moreActions").hidden = true;
@@ -1152,22 +1114,15 @@
       $("bbPlayBtn").hidden = true;
       $("bbMixBtn").hidden = true;
       $("bbNextBtn").hidden = false;
-      $("resultSub").textContent = "まだミックスしていません。「設定」画面でミックスを作成してください。";
+      var rs0 = $("resultSub"); if(rs0){ rs0.hidden = false; rs0.textContent = "まだミックスしていません。「設定」画面でミックスを作成してください。"; }
       updateBottomBar();
       return;
     }
     var sec = resultSec();
-    var ddi = $("dedupeInfo");
-    if(ddi){
-      if(state.lastDedupeRemoved > 0){
-        ddi.hidden = false;
-        ddi.textContent = "重複 " + state.lastDedupeRemoved + " 曲を除きました";
-      } else { ddi.hidden = true; }
-    }
     $("playHero").hidden = false;
     $("moreActions").hidden = false;
     $("playTotalTime").textContent = fmtLong(sec);
-    $("playTotalSub").textContent = state.result.length + " 曲 ・ 合計 " + fmt(sec) + "（" + (sec >= 3600 ? "長距離ドライブにも十分な長さです" : (sec >= 1800 ? "1時間前後のドライブにぴったり" : "短めのお出かけ向けです")) + "）";
+    $("playTotalSub").textContent = state.result.length + " 曲 ・ 合計 " + fmt(sec) + (state.lastDedupeRemoved > 0 ? " ・ 重複 " + state.lastDedupeRemoved + " 曲を除きました" : "");
 
     rebuildPlayerQueue(false);
     var tf1 = $("tracklistFold"); if(tf1) tf1.hidden = false;
@@ -1194,15 +1149,19 @@
     if(ids.length){
       state.resultPlayable = true;
       var npb1 = $("noPlayBox"); if(npb1) npb1.hidden = true;
-      $("resultSub").textContent = "下のプレイヤーでそのまま再生できます。曲が終わると自動で次へ進みます。";
+      var rs1 = $("resultSub"); if(rs1){ rs1.textContent = ""; rs1.hidden = true; }
       $("playHero").hidden = false;
       var ps = $("playerSection"); if(ps) ps.hidden = false;
       var skipped = state.result.length - ids.length;
       var noteEl = $("playerNote");
       if(noteEl){
-        noteEl.innerHTML = skipped > 0
-          ? "<b>" + skipped + "曲</b>はURLがないため再生対象外です（リストに「再生対象外」と表示）。再生できるのは <b>" + ids.length + "曲</b>です。"
-          : "全" + ids.length + "曲を順番に再生します。リストの曲をタップしてもその曲から再生できます。";
+        if(skipped > 0){
+          noteEl.hidden = false;
+          noteEl.innerHTML = "<b>" + skipped + "曲</b>はURLがないため再生対象外です（リストに「再生対象外」と表示）。再生できるのは <b>" + ids.length + "曲</b>です。";
+        } else {
+          noteEl.hidden = true;
+          noteEl.innerHTML = "";
+        }
       }
       if(ytBtn){
         ytBtn.hidden = false;
@@ -1211,8 +1170,8 @@
       if(bbPlay){ bbPlay.hidden = true; bbPlay.href = ytBtn ? ytBtn.href : "#"; }
       $("bbMixBtn").hidden = true;
       $("bbNextBtn").hidden = true;
-      notice.hidden = false;
-      notice.textContent = "サイト内プレイヤーは曲数制限なく全曲再生できます。「その他の操作」のYouTube一括再生は先頭50曲までです。";
+      notice.hidden = true;
+      notice.textContent = "";
       // プレイヤーの準備（API準備済みなら作成、未準備なら onYouTubeIframeAPIReady で作成）
       if(ytPlayer && ytPlayerReady){ loadCurrentVideo(false); }
       else { createYtPlayer(); updatePlayerUI(); }
@@ -1221,7 +1180,7 @@
       $("playHero").hidden = true;
       var ps2 = $("playerSection"); if(ps2) ps2.hidden = true;
       var npb2 = $("noPlayBox"); if(npb2) npb2.hidden = false;
-      $("resultSub").textContent = "曲にURLが含まれていないため、サイト内では再生できません。";
+      var rs2 = $("resultSub"); if(rs2){ rs2.hidden = false; rs2.textContent = "曲にURLが含まれていないため、サイト内では再生できません。"; }
       if(ytBtn) ytBtn.hidden = true;
       if(bbPlay) bbPlay.hidden = true;
       $("bbMixBtn").hidden = true;
@@ -1604,7 +1563,6 @@
   if(pLoop) pLoop.addEventListener("click", function(){
     playerLoop = !playerLoop;
     pLoop.setAttribute("aria-pressed", String(playerLoop));
-    var ls = $("loopState"); if(ls) ls.textContent = playerLoop ? "オン" : "オフ";
     updatePlayerUI();
     toast(playerLoop ? "ループ再生をオンにしました（最後の曲のあと最初に戻ります）" : "ループ再生をオフにしました");
   });
@@ -1679,25 +1637,15 @@
   });
   /* （ファイル書き出しは廃止：再生とアカウント保存に絞った） */
 
-  /* ---------- 削除の確認ダイアログ（ブラウザ標準confirmは使わない） ---------- */
-  var pendingDeletePlId = null;
-  function openDeleteConfirm(pl){
-    pendingDeletePlId = pl.id;
-    $("confirmSubText").textContent = "「" + pl.name + "」を一覧から削除します。この操作は元に戻せません。";
-    $("confirmOverlay").hidden = false;
-  }
-  function closeDeleteConfirm(){ pendingDeletePlId = null; $("confirmOverlay").hidden = true; }
-  $("confirmCancelBtn").addEventListener("click", closeDeleteConfirm);
-  $("confirmOverlay").addEventListener("click", function(e){ if(e.target === $("confirmOverlay")) closeDeleteConfirm(); });
-  $("confirmOkBtn").addEventListener("click", function(){
-    if(pendingDeletePlId == null){ closeDeleteConfirm(); return; }
-    var id2 = pendingDeletePlId;
-    state.playlists.forEach(function(pl){ if(pl.id===id2) delete savedSel[plKey(pl)]; });
-    state.playlists = state.playlists.filter(function(pl){ return pl.id!==id2; });
-    closeDeleteConfirm();
+  /* ---------- 削除は確認なしで即時実行 ---------- */
+  function deletePlaylistImmediately(pl){
+    if(!pl) return;
+    var id2 = pl.id;
+    state.playlists.forEach(function(p){ if(p.id===id2) delete savedSel[plKey(p)]; });
+    state.playlists = state.playlists.filter(function(p){ return p.id!==id2; });
     persistSelection();
     renderPlaylists(); toast("プレイリストを削除しました");
-  });
+  }
 
   // 再生リストの曲をタップしたら、その曲から再生
   var resultListEl = $("resultList");
@@ -1737,7 +1685,7 @@
       var delId = +t.getAttribute("data-del-pl");
       var delTarget = null;
       state.playlists.forEach(function(pl){ if(pl.id===delId) delTarget = pl; });
-      if(delTarget) openDeleteConfirm(delTarget);
+      if(delTarget) deletePlaylistImmediately(delTarget);
     }
     if(t.hasAttribute("data-del-track")){
       var parts = t.getAttribute("data-del-track").split(":");
