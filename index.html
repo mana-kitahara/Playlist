@@ -225,7 +225,6 @@
       .pl-stat{font-size:12px;color:var(--muted)}
       .pl-stat b{font-family:"Archivo",sans-serif;font-size:19px;font-weight:800;color:var(--ink);margin-right:2px}
       .pl-stat small{font-size:11.5px;color:var(--muted)}
-      .rec{display:inline-block;background:var(--red);color:#fff;font-size:10.5px;font-weight:900;border-radius:999px;padding:1px 8px;vertical-align:2px}
       @keyframes nudgeX{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
       .nudge .pl-card{animation:nudgeX .3s ease 2}
       .pl-actions{display:flex;flex-direction:column;gap:6px;flex:none;align-items:stretch}
@@ -640,13 +639,13 @@
 
           <div class="seg" role="group" aria-label="並び順">
             <button type="button" data-mode="append"><b>そのままつなげる</b></button>
-            <button type="button" data-mode="interleave" class="sel"><b>交互にミックス <span class="rec">おすすめ</span></b></button>
+            <button type="button" data-mode="interleave" class="sel"><b>交互にミックス</b></button>
             <button type="button" data-mode="spread"><b>アーティスト均等配置</b></button>
             <button type="button" data-mode="shuffle"><b>シャッフル</b></button>
           </div>
 
           <div class="switch-row">
-            <div class="txt"><b>重複する曲を取り除く <span class="rec">おすすめ</span></b></div>
+            <div class="txt"><b>重複する曲を取り除く</b></div>
             <button class="switch" id="dedupeSwitch" type="button" role="switch" aria-checked="true" aria-label="重複する曲を取り除く"></button>
           </div>
         </section>
@@ -1238,6 +1237,26 @@
     state.playlists.forEach(function(p){ savedSel[plKey(p)] = !!p.included; });
     try{ localStorage.setItem(LS_SEL_KEY, JSON.stringify(savedSel)); }catch(e){ /* 保存できなくても動作は続行 */ }
   }
+  /* ---------- 前回のミックス方法を覚える（並び順＋重複除去のオン／オフ） ---------- */
+  var LS_MIX_KEY = "ytmixer_mix_settings";
+  function persistMixSettings(){
+    try{ localStorage.setItem(LS_MIX_KEY, JSON.stringify({ mode: state.mode, dedupe: !!state.dedupe })); }catch(e){ /* 保存できなくても動作は続行 */ }
+  }
+  function restoreMixSettings(){
+    var saved = null;
+    try{ saved = JSON.parse(localStorage.getItem(LS_MIX_KEY) || "null"); }catch(e){ saved = null; }
+    if(!saved || typeof saved !== "object") return; // 保存がなければデフォルト（交互にミックス＋重複除去オン）のまま
+    var validModes = ["append", "interleave", "spread", "shuffle"];
+    if(validModes.indexOf(saved.mode) > -1) state.mode = saved.mode;
+    if(typeof saved.dedupe === "boolean") state.dedupe = saved.dedupe;
+    // 画面表示にも反映する（並び順ボタンの選択状態と重複除去スイッチ）
+    document.querySelectorAll(".seg button").forEach(function(b){
+      b.classList.toggle("sel", b.getAttribute("data-mode") === state.mode);
+    });
+    var ds = document.getElementById("dedupeSwitch");
+    if(ds) ds.setAttribute("aria-checked", String(!!state.dedupe));
+  }
+  restoreMixSettings();
   var READ_SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
   var WRITE_SCOPE = "https://www.googleapis.com/auth/youtube";
   var auth = {
@@ -1939,6 +1958,7 @@
       document.querySelectorAll(".seg button").forEach(function(b){ b.classList.remove("sel"); });
       btn.classList.add("sel");
       state.mode = btn.getAttribute("data-mode");
+      persistMixSettings();
     });
   });
 
@@ -1947,6 +1967,7 @@
       var now = $(id).getAttribute("aria-checked") === "true";
       $(id).setAttribute("aria-checked", String(!now));
       state[key] = !now;
+      if(key === "dedupe") persistMixSettings();
     });
   }
   bindSwitch("dedupeSwitch","dedupe");
