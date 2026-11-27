@@ -98,7 +98,7 @@
       .gear-btn{width:34px;height:34px;min-height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none}
       .gear-btn svg{width:19px;height:19px;display:block}
       .gear-btn[aria-expanded="true"]{color:var(--red);border-color:var(--red)}
-      .settings-panel{margin-top:10px;padding:14px 16px}
+      .settings-panel{position:static;margin-top:10px;padding:14px 16px}
       .settings-panel h2{font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:9px}
       .settings-panel h2 .dot{width:9px;height:9px;border-radius:50%;background:var(--red);flex:none}
       .settings-panel .sub{margin:0 0 6px;font-size:12.5px;color:var(--muted)}
@@ -404,13 +404,11 @@
       .notice{
         background:var(--red-soft);border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;color:var(--ink-2);margin-top:13px;
       }
-      .toast{
-        position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));bottom:auto;transform:translateX(-50%) translateY(-16px);
-        background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:999px;font-size:13.5px;font-weight:700;
-        opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:90;max-width:92vw;text-align:center;
-        box-shadow:0 8px 24px rgba(0,0,0,.25);
+      .inline-status{
+        position:static;background:var(--red-soft);color:var(--ink-2);
+        border:1px solid var(--line);border-radius:var(--radius-sm);
+        padding:10px 14px;font-size:13px;font-weight:700;line-height:1.55;margin-top:12px;
       }
-      .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
       /* サイト内プレイヤー（YouTube Music風：16:9アートワーク＋左寄せ曲情報＋シークバー＋操作列）／再生画面は1画面に収まるよう高さ基準で抑える */
       body.on-play .wrap{padding-bottom:16px}
@@ -520,7 +518,7 @@
       }
       @media (prefers-reduced-motion: reduce){
         html{scroll-behavior:auto}
-        .btn,.switch::after,.toast,.pl-card,.howto>summary .chev,.big-play{transition:none}
+        .btn,.switch::after,.pl-card,.howto>summary .chev,.big-play{transition:none}
         .spin{animation:none}
         .nudge .pl-card{animation:none}
       }
@@ -540,6 +538,7 @@
 
         <div class="card gate-card">
           <h2 id="gateH">YouTubeでログイン</h2>
+          <div class="inline-status" id="inlineStatusGate" role="status" aria-live="polite" hidden></div>
 
           <label class="f" for="gateClientIdInput">クライアントID（初回だけ）</label>
           <input type="text" id="gateClientIdInput" placeholder="ここに貼り付け" autocomplete="off" autocapitalize="none" spellcheck="false" />
@@ -579,6 +578,8 @@
           <div class="stat"><b id="statTime">0:00</b><span>合計</span></div>
         </div>
       </header>
+
+      <div class="inline-status" id="inlineStatus" role="status" aria-live="polite" hidden></div>
 
       <section class="card settings-panel" id="settingsPanel" hidden aria-labelledby="settingsH">
         <h2 id="settingsH"><span class="dot"></span>設定</h2>
@@ -627,7 +628,7 @@
 
       <div class="view" id="viewMix" hidden>
         <section class="card" aria-labelledby="mixH">
-          <h2 id="mixH"><span class="dot"></span>ミックス設定</h2>
+          <h2 id="mixH"><span class="dot"></span>プレイリストミックス設定</h2>
 
           <div class="seg" role="group" aria-label="並び順">
             <button type="button" data-mode="append"><b>そのままつなげる</b></button>
@@ -719,7 +720,6 @@
       <a class="btn primary" id="bbPlayBtn" href="#" target="_blank" rel="noopener" hidden>▶ YouTubeで再生する</a>
     </div>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script id="appScript">
 (function(){
@@ -1175,9 +1175,11 @@
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
     });
   }
-  function toast(msg){
-    var el = $("toast"); el.textContent = msg; el.classList.add("show");
-    clearTimeout(toast._t); toast._t = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+  function showStatus(msg){
+    ["inlineStatus","inlineStatusGate"].forEach(function(id){
+      var el = $(id); if(!el) return;
+      el.textContent = msg; el.hidden = false;
+    });
   }
   function download(filename, text, mime){
     var blob = new Blob([text], {type:(mime||"text/plain") + ";charset=utf-8"});
@@ -1324,7 +1326,7 @@
   }
   function mix(){
     var pls = selectedPlaylists();
-    if(!pls.length){ toast("ミックスに含めるプレイリストがありません"); return; }
+    if(!pls.length){ showStatus("ミックスに含めるプレイリストがありません"); return; }
     var groups = pls.map(withSource);
     var out = [];
 
@@ -1378,15 +1380,16 @@
     state.result = out;
     renderResult();
     var tfNew = $("tracklistFold"); if(tfNew) tfNew.open = false; // 曲一覧は最初は収納状態
-    toast("ミックスを作成しました（" + out.length + " 曲）");
+    showStatus("ミックスを作成しました（" + out.length + " 曲）");
     goToStep(3);
   }
 
   /* ---------- 3画面の切り替え ---------- */
   var currentStep = 1;
   function goToStep(n){
+    var requestedStep = n;
     if(n === 2 && !selectedPlaylists().length){
-      toast(state.playlists.length ? "まずプレイリストを1つ選んでね" : "まずプレイリストを追加してね");
+      showStatus(state.playlists.length ? "まずプレイリストを1つ選んでね" : "まずプレイリストを追加してね");
       var plBox = $("playlistList");
       if(plBox){
         plBox.classList.remove("nudge"); void plBox.offsetWidth; plBox.classList.add("nudge");
@@ -1394,7 +1397,11 @@
       }
       n = 1;
     }
-    if(n === 3 && !state.result.length){ toast("先にミックスを作成してください"); n = selectedPlaylists().length ? 2 : 1; }
+    if(n === 3 && !state.result.length){ showStatus("先にミックスを作成してください"); n = selectedPlaylists().length ? 2 : 1; }
+    // 目的の画面へ進めたときは、前の画面の案内表示は残さない（進めなかったときの案内だけを画面内に出す）
+    if(n === requestedStep){
+      ["inlineStatus","inlineStatusGate"].forEach(function(id){ var el = $(id); if(el) el.hidden = true; });
+    }
     currentStep = n;
     // 画面（ステップ）を切り替えたら歯車の設定パネルは自動で閉じる
     var sp = $("settingsPanel"); if(sp) sp.hidden = true;
@@ -1573,22 +1580,22 @@
     window.scrollTo(0, 0);
   }
   function requestToken(scope, onOk){
-    if(!auth.clientId){ toast("先にクライアントIDを入力してください"); var cidEl = $("settingsClientIdInput") || $("gateClientIdInput"); if(cidEl) cidEl.focus(); return; }
-    if(!gisReady()){ toast("Googleログインの読み込み中です。数秒待ってからもう一度押してください"); return; }
+    if(!auth.clientId){ showStatus("先にクライアントIDを入力してください"); var cidEl = $("settingsClientIdInput") || $("gateClientIdInput"); if(cidEl) cidEl.focus(); return; }
+    if(!gisReady()){ showStatus("Googleログインの読み込み中です。数秒待ってからもう一度押してください"); return; }
     auth.pending = { scope: scope, onOk: onOk };
     // スコープごとにクライアントを作り直す（読み取り用／保存用で許可が違うため）
     auth.tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: auth.clientId,
       scope: scope,
       callback: onTokenResponse,
-      error_callback: function(){ auth.pending = null; toast("ログインがキャンセルされたか、失敗しました"); }
+      error_callback: function(){ auth.pending = null; showStatus("ログインがキャンセルされたか、失敗しました"); }
     });
     auth.tokenClient.requestAccessToken({});
   }
   function onTokenResponse(resp){
     var pending = auth.pending; auth.pending = null;
     if(!resp || resp.error || !resp.access_token){
-      toast("ログインできませんでした。ブラウザ（Chrome等）で開いているか確認してください");
+      showStatus("ログインできませんでした。ブラウザ（Chrome等）で開いているか確認してください");
       return;
     }
     auth.token = resp.access_token;
@@ -1657,10 +1664,10 @@
     page("").then(function(){
       auth.myPlaylists = all;
       renderMyPlaylists();
-      if(!all.length) toast("このアカウントにプレイリストが見つかりませんでした");
+      if(!all.length) showStatus("このアカウントにプレイリストが見つかりませんでした");
     }).catch(function(err){
       wrap.innerHTML = "";
-      toast(err.message || "プレイリストの読み込みに失敗しました");
+      showStatus(err.message || "プレイリストの読み込みに失敗しました");
     });
   }
   function renderMyPlaylists(){
@@ -1741,7 +1748,7 @@
           pl.included = false;
           persistSelection();
           renderPlaylists();
-          if(!silent) toast("「" + pl.name + "」に曲がありませんでした");
+          if(!silent) showStatus("「" + pl.name + "」に曲がありませんでした");
           if(done) done(); return;
         }
         pl.tracks = tracks;
@@ -1750,21 +1757,21 @@
         pl.included = true;
         persistSelection();
         renderPlaylists();
-        if(!silent) toast("「" + pl.name + "」を選択しました（" + tracks.length + " 曲）");
+        if(!silent) showStatus("「" + pl.name + "」を選択しました（" + tracks.length + " 曲）");
         if(done) done();
       }).catch(function(err){
         pl.loading = false;
         pl.included = false;
         persistSelection();
         renderPlaylists();
-        toast(err.message || "曲の読み込みに失敗しました");
+        showStatus(err.message || "曲の読み込みに失敗しました");
         if(done) done();
       });
     });
   }
   function saveResultToAccount(){
     var withId = state.result.filter(function(t){ return t.videoId; });
-    if(!withId.length){ toast("動画URLのある曲がないため、アカウントに保存できません"); return; }
+    if(!withId.length){ showStatus("動画URLのある曲がないため、アカウントに保存できません"); return; }
     ensureToken(WRITE_SCOPE, function(){
       var btn = $("saveToAccountBtn");
       btn.disabled = true;
@@ -1780,7 +1787,7 @@
           if(i >= withId.length){
             btn.disabled = false;
             btn.textContent = "アカウントにプレイリストとして保存";
-            toast("アカウントに保存しました：「" + title + "」");
+            showStatus("アカウントに保存しました：「" + title + "」");
             return;
           }
           var t = withId[i];
@@ -1792,14 +1799,14 @@
           }).then(function(){ i++; next(); }, function(err){
             btn.disabled = false;
             btn.textContent = "アカウントにプレイリストとして保存";
-            toast("途中で止まりました（" + i + " 曲まで保存済み）：" + (err.message || ""));
+            showStatus("途中で止まりました（" + i + " 曲まで保存済み）：" + (err.message || ""));
           });
         }
         next();
       }).catch(function(err){
         btn.disabled = false;
         btn.textContent = "アカウントにプレイリストとして保存";
-        toast(err.message || "保存に失敗しました");
+        showStatus(err.message || "保存に失敗しました");
       });
     });
   }
@@ -1808,7 +1815,7 @@
   $("addPlaylistBtn").addEventListener("click", function(){
     var name = $("plName").value.trim();
     var tracks = parseTracks($("plTracks").value);
-    if(!tracks.length){ toast("曲を1曲以上入力してください（URLだけでもOK）"); return; }
+    if(!tracks.length){ showStatus("曲を1曲以上入力してください（URLだけでもOK）"); return; }
     if(!name) name = "プレイリスト " + (state.playlists.length + 1);
     var newKey = "name:" + name;
     state.playlists.push({
@@ -1818,13 +1825,13 @@
     $("plName").value = ""; $("plTracks").value = "";
     persistSelection();
     renderPlaylists();
-    toast("「" + name + "」を追加しました（" + tracks.length + " 曲）");
+    showStatus("「" + name + "」を追加しました（" + tracks.length + " 曲）");
   });
 
   /* すべて選択：未選択のものをまとめて選ぶ（YouTubeのものは曲を読み込みながら） */
   $("selectAllBtn").addEventListener("click", function(){
     var rest = state.playlists.filter(function(p){ return !p.included; });
-    if(!rest.length){ toast("すべて選択済みです"); return; }
+    if(!rest.length){ showStatus("すべて選択済みです"); return; }
     var needLoad = [];
     rest.forEach(function(p){
       if(p.tracksLoaded === false){ needLoad.push(p); }
@@ -1833,7 +1840,7 @@
     persistSelection();
     renderPlaylists();
     if(needLoad.length) loadSequential(needLoad, 0, true);
-    else toast("すべて選択しました");
+    else showStatus("すべて選択しました");
   });
 
   function updateBalanceAvailability(){
@@ -1876,7 +1883,7 @@
       var iv = setInterval(function(){
         tries++;
         if(ytPlayer && ytPlayerReady){ clearInterval(iv); loadCurrentVideo(true); try{ ytPlayer.playVideo(); }catch(e){} }
-        else if(tries > 20){ clearInterval(iv); toast("プレイヤーの読み込み中です。もう一度押してください"); }
+        else if(tries > 20){ clearInterval(iv); showStatus("プレイヤーの読み込み中です。もう一度押してください"); }
       }, 250);
       return;
     }
@@ -1901,14 +1908,14 @@
     playerLoop = !playerLoop;
     pLoop.setAttribute("aria-pressed", String(playerLoop));
     updatePlayerUI();
-    toast(playerLoop ? "ループ再生をオンにしました（最後の曲のあと最初に戻ります）" : "ループ再生をオフにしました");
+    showStatus(playerLoop ? "ループ再生をオンにしました（最後の曲のあと最初に戻ります）" : "ループ再生をオフにしました");
   });
   var pShuffle = $("playerShuffleBtn");
   if(pShuffle) pShuffle.addEventListener("click", function(){
-    if(state.result.length < 2){ toast("シャッフルできる曲がありません"); return; }
+    if(state.result.length < 2){ showStatus("シャッフルできる曲がありません"); return; }
     state.result = shuffleArr(state.result);
     renderResult();
-    toast("結果をシャッフルしました");
+    showStatus("結果をシャッフルしました");
   });
 
   /* ---------- シークバー（IFrame APIで現在位置を取得し、ドラッグで移動） ---------- */
@@ -1965,8 +1972,8 @@
   }
   function startLogin(inputEl){
     var v = inputEl.value.trim();
-    if(!v){ toast("クライアントIDを入力してください"); inputEl.focus(); return; }
-    if(!/\.apps\.googleusercontent\.com$/.test(v)){ toast("クライアントIDの形式が違うようです（末尾は .apps.googleusercontent.com）"); inputEl.focus(); return; }
+    if(!v){ showStatus("クライアントIDを入力してください"); inputEl.focus(); return; }
+    if(!/\.apps\.googleusercontent\.com$/.test(v)){ showStatus("クライアントIDの形式が違うようです（末尾は .apps.googleusercontent.com）"); inputEl.focus(); return; }
     syncClientId(v, inputEl);
     requestToken(READ_SCOPE, loadMyPlaylists);
   }
@@ -1987,7 +1994,7 @@
   $("guestBtn").addEventListener("click", function(){
     setBadge(false, "ゲスト利用中");
     enterApp();
-    toast("ログインせずに使えます。曲は「プレイリストを追加」から手で貼ってください");
+    showStatus("ログインせずに使えます。曲は「プレイリストを追加」から手で貼ってください");
   });
   function doLogout(){
     if(auth.token && window.google && google.accounts && google.accounts.oauth2){
@@ -2001,14 +2008,14 @@
     renderPlaylists();
     renderResult();
     showGate();
-    toast("ログアウトしました");
+    showStatus("ログアウトしました");
   }
   $("settingsLogoutBtn").addEventListener("click", doLogout);
   $("copyBtn").addEventListener("click", function(){
     var text = resultAsText();
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(function(){ toast("リストをコピーしました"); }, function(){ toast("コピーできませんでした"); });
-    } else { toast("このブラウザではコピーに対応していません"); }
+      navigator.clipboard.writeText(text).then(function(){ showStatus("リストをコピーしました"); }, function(){ showStatus("コピーできませんでした"); });
+    } else { showStatus("このブラウザではコピーに対応していません"); }
   });
   /* （ファイル書き出しは廃止：再生とアカウント保存に絞った） */
 
@@ -2019,7 +2026,7 @@
     state.playlists.forEach(function(p){ if(p.id===id2) delete savedSel[plKey(p)]; });
     state.playlists = state.playlists.filter(function(p){ return p.id!==id2; });
     persistSelection();
-    renderPlaylists(); toast("プレイリストを削除しました");
+    renderPlaylists(); showStatus("プレイリストを削除しました");
   }
 
   // 再生リストの曲をタップしたら、その曲から再生
