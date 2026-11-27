@@ -350,6 +350,11 @@
       .tt{flex:1;min-width:0}
       .tt .title{font-weight:700;font-size:14.5px;overflow-wrap:anywhere;line-height:1.4}
       .tt .artist{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+      /* 曲一覧の曲名マーキー：1行の窓の中で、はみ出す曲名だけが流れる */
+      .tt .title.tl-title{overflow:hidden;white-space:nowrap;overflow-wrap:normal;position:relative}
+      .tl-title-inner{display:inline-block;white-space:nowrap;vertical-align:top}
+      .tl-title.is-marquee .tl-title-inner{will-change:transform}
+      .tl-title.is-clamped .tl-title-inner{display:block;overflow:hidden;text-overflow:ellipsis}
       .tt .artist .src{color:var(--ink-2)}
       .dur{font-family:"Archivo",sans-serif;font-size:12.5px;color:var(--muted);flex:none}
       .mini-link{flex:none;font-size:12.5px;font-weight:700;text-decoration:none;padding:12px 6px}
@@ -395,7 +400,7 @@
       }
       .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-      /* サイト内プレイヤー（YouTube Music風：正方形アートワーク＋左寄せ曲情報＋シークバー＋操作列）／再生画面は1画面に収まるよう高さ基準で抑える */
+      /* サイト内プレイヤー（YouTube Music風：16:9アートワーク＋左寄せ曲情報＋シークバー＋操作列）／再生画面は1画面に収まるよう高さ基準で抑える */
       body.on-play .wrap{padding-bottom:16px}
       body.on-play footer{margin-top:10px}
       body.on-play .hero{padding-top:6px}
@@ -404,7 +409,7 @@
       #viewPlay .card{padding:10px 12px 12px;margin-bottom:8px}
       #viewPlay .card .sub{margin-bottom:6px}
       .player-section{margin:0 auto;max-width:560px;border:0;border-radius:0;background:transparent;padding:6px 2px 0}
-      .artwork-wrap{position:relative;width:92%;margin:0 auto;aspect-ratio:1/1;border-radius:16px;overflow:hidden;background:var(--surface-2)}
+      .artwork-wrap{position:relative;width:92%;margin:0 auto;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:var(--surface-2)}
       .artwork-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;color:var(--muted)}
       .artwork-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
       /* 埋め込みプレイヤー本体は音声再生専用：画面外に配置して一切見せず、タップもできないようにする（display:noneにはしない） */
@@ -869,6 +874,134 @@
     if(npResizeTimer) clearTimeout(npResizeTimer);
     npResizeTimer = setTimeout(refreshNpMarquee, 220);
   });
+  /* ---------- 曲一覧の曲名：はみ出したらマーキー（再生中タイトルと同じ挙動） ---------- */
+  /* 行数が多くても重くならないよう、画面に見えている行（＋少し手前）だけを
+     IntersectionObserver でアニメーションし、外れた行は止める。 */
+  var tlGen = 0;
+  var tlObserver = null;
+  var tlAnimMap = (typeof Map !== "undefined") ? new Map() : null;
+  var tlResizeTimer = null;
+  function tlCancelAnim(el){
+    if(!el) return;
+    if(tlAnimMap){
+      var a = tlAnimMap.get(el);
+      if(a){ try{ a.cancel(); }catch(e){} tlAnimMap.delete(el); }
+    }
+    if(el._tlTimer){ try{ clearTimeout(el._tlTimer); }catch(e){} el._tlTimer = null; }
+    el._tlGen = (el._tlGen || 0) + 1;
+    var inner = el.querySelector ? el.querySelector(".tl-title-inner") : null;
+    if(inner){ inner.style.transition = "none"; inner.style.transform = ""; }
+    el.classList.remove("is-marquee");
+  }
+  function tlStopAll(){
+    if(tlObserver){ try{ tlObserver.disconnect(); }catch(e){} tlObserver = null; }
+    if(tlAnimMap){
+      tlAnimMap.forEach(function(anim){ try{ anim.cancel(); }catch(e){} });
+      tlAnimMap.clear();
+    }
+    var list = $("resultList");
+    if(list){
+      list.querySelectorAll(".tl-title").forEach(function(el){
+        if(el._tlTimer){ try{ clearTimeout(el._tlTimer); }catch(e){} el._tlTimer = null; }
+        el._tlGen = (el._tlGen || 0) + 1;
+        var inner = el.querySelector(".tl-title-inner");
+        if(inner){ inner.style.transition = "none"; inner.style.transform = ""; }
+        el.classList.remove("is-marquee");
+        el.classList.remove("is-clamped");
+      });
+    }
+  }
+  function tlStartMarquee(el, gen){
+    if(gen !== tlGen || !el || !el.clientWidth) return;
+    var inner = el.querySelector(".tl-title-inner");
+    if(!inner) return;
+    /* 既にアニメーション中なら二重に始めない */
+    if(tlAnimMap && tlAnimMap.has(el)) return;
+    var dist = inner.offsetWidth - el.clientWidth;
+    if(dist <= 4) return; /* 行の幅に収まる曲名は静止表示 */
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(reduce){ el.classList.add("is-clamped"); return; }
+    el.classList.add("is-marquee");
+    var holdStartMs = 3000; /* 最初に少し（約3秒）止まる */
+    var holdEndMs = 2000;   /* 流れ終わったら少し止まる */
+    var scrollMs = Math.max(2500, Math.round(dist / 30 * 1000)); /* ゆっくり：約30px/秒（再生中タイトルと同じ） */
+    var totalMs = holdStartMs + scrollMs + holdEndMs;
+    var p1 = holdStartMs / totalMs;
+    var p2 = (holdStartMs + scrollMs) / totalMs;
+    if(inner.animate){
+      var anim = inner.animate([
+        { transform: "translateX(0px)", offset: 0 },
+        { transform: "translateX(0px)", offset: p1 },
+        { transform: "translateX(" + (-dist) + "px)", offset: p2 },
+        { transform: "translateX(" + (-dist) + "px)", offset: 1 }
+      ], { duration: totalMs, iterations: Infinity, easing: "linear" });
+      if(tlAnimMap) tlAnimMap.set(el, anim);
+    } else {
+      /* WAAPI非対応時のフォールバック：トランジションで同じリズムを再現 */
+      var myGen = (el._tlGen = (el._tlGen || 0) + 1);
+      var runFallback = function(){
+        if(gen !== tlGen || el._tlGen !== myGen) return;
+        inner.style.transition = "none";
+        inner.style.transform = "translateX(0px)";
+        el._tlTimer = setTimeout(function(){
+          if(gen !== tlGen || el._tlGen !== myGen) return;
+          inner.style.transition = "transform " + scrollMs + "ms linear";
+          inner.style.transform = "translateX(" + (-dist) + "px)";
+          el._tlTimer = setTimeout(function(){
+            if(gen !== tlGen || el._tlGen !== myGen) return;
+            el._tlTimer = setTimeout(runFallback, holdEndMs);
+          }, scrollMs);
+        }, holdStartMs);
+      };
+      runFallback();
+    }
+  }
+  function setupTrackMarquees(){
+    tlGen++;
+    var gen = tlGen;
+    tlStopAll();
+    /* tlStopAll の中でクラスを外したので世代を合わせ直す */
+    gen = tlGen;
+    var list = $("resultList");
+    if(!list) return;
+    var titles = list.querySelectorAll(".tl-title");
+    if(!titles.length) return;
+    if(window.IntersectionObserver){
+      tlObserver = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          var el = entry.target;
+          if(entry.isIntersecting){
+            requestAnimationFrame(function(){ if(gen === tlGen) tlStartMarquee(el, gen); });
+          } else {
+            tlCancelAnim(el);
+          }
+        });
+      }, { root: null, rootMargin: "120px 0px", threshold: 0.01 });
+      titles.forEach(function(el){ tlObserver.observe(el); });
+    } else {
+      /* Observer非対応時は先頭の行だけに絞って開始する */
+      var limit = Math.min(titles.length, 20);
+      for(var i = 0; i < limit; i++){ tlStartMarquee(titles[i], gen); }
+    }
+  }
+  window.addEventListener("resize", function(){
+    if(tlResizeTimer) clearTimeout(tlResizeTimer);
+    tlResizeTimer = setTimeout(function(){ setupTrackMarquees(); }, 220);
+  });
+  /* 曲一覧を開いたら幅が確定するので計測し直す（閉じている間は幅0で測れない） */
+  (function bindTracklistFold(){
+    var fold = $("tracklistFold");
+    if(!fold) return;
+    fold.addEventListener("toggle", function(){
+      if(fold.open){
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){ setupTrackMarquees(); });
+        });
+      } else {
+        tlStopAll();
+      }
+    });
+  })();
   function createYtPlayer(){
     if(!ytApiReady || ytPlayer || !playerQueue.length) return;
     var firstIdx = currentResultIdx();
@@ -1266,7 +1399,7 @@
     });
     updateBottomBar();
     window.scrollTo(0, 0);
-    if(n === 3){ requestAnimationFrame(function(){ refreshNpMarquee(); }); }
+    if(n === 3){ requestAnimationFrame(function(){ refreshNpMarquee(); setupTrackMarquees(); }); }
   }
 
   /* ---------- rendering: result ---------- */
@@ -1306,6 +1439,7 @@
 
     if(!has){
       list.innerHTML = "";
+      tlStopAll();
       var tf0 = $("tracklistFold"); if(tf0) tf0.hidden = true;
       notice.hidden = true;
       state.resultPlayable = false;
@@ -1336,7 +1470,7 @@
       return '<li data-result-idx="' + i + '"' + (playable ? ' data-play-idx="' + i + '"' : '') + ' class="' + (playable ? '' : 'is-unplayable') + '">' +
         '<span class="no">' + (i+1) + '</span>' +
         '<span class="bar"></span>' +
-        '<div class="tt"><div class="title">' + esc(t.title) + '</div>' +
+        '<div class="tt"><div class="title tl-title"><span class="tl-title-inner">' + esc(t.title) + '</span></div>' +
         '<div class="artist">' + (t.artist ? esc(t.artist) + " ・ " : "") + '<span class="src">' + esc(t.source) + '</span></div>' +
         (playable ? '' : '<span class="unplayable-badge">再生対象外（URLなし）</span>') + '</div>' +
         '<span class="dur' + (trackUnknown(t) ? ' dur-unknown' : '') + '">' + (trackUnknown(t) ? "長さ不明" : fmt(t.durationSec)) + '</span>' +
@@ -1344,6 +1478,8 @@
         '<button class="track-del" type="button" data-del-result="' + i + '" aria-label="結果から削除">✕</button>' +
       '</li>';
     }).join("");
+    /* 曲一覧を再描画したら曲名のはみ出しを計測し直す（見えている行だけマーキー） */
+    setupTrackMarquees();
 
     // サイト内プレイヤー（動画IDがある曲だけをキュー再生）＋補助の一括再生リンク
     var ids = state.result.map(function(t){return t.videoId;}).filter(Boolean);
