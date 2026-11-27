@@ -206,8 +206,6 @@
       .pl-meta{min-width:0;padding:7px 2px 1px}
       .pl-name{font-weight:900;font-size:13.5px;line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
       .pl-info{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px}
-      .pl-badge{font-size:10px;font-weight:900;border-radius:999px;padding:1px 7px;background:var(--surface-2);color:var(--muted)}
-      .pl-card.on .pl-badge{background:var(--pl);color:#fff}
       .pl-thumb-wrap{position:relative;display:block;width:100%;aspect-ratio:1/1}
       .pl-thumb{width:100%;height:100%;border-radius:9px;object-fit:cover;display:block;background:var(--surface-2)}
       .pl-thumb-ph{display:flex;align-items:center;justify-content:center;background:var(--pl);color:#fff;font-size:34px}
@@ -237,12 +235,6 @@
         background:transparent;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:15px;
       }
       .icon-btn:hover{color:var(--red);border-color:var(--red)}
-      .pl-tracks{margin:11px 0 0;padding:0;list-style:none;border-top:1px dashed var(--line)}
-      .pl-tracks li{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
-      .pl-tracks li:last-child{border-bottom:none}
-      .pl-tracks .t{flex:1;min-width:0;overflow-wrap:anywhere}
-      .pl-tracks .a{color:var(--muted)}
-      .pl-tracks .d{color:var(--muted);font-family:"Archivo",sans-serif;font-size:12px;flex:none}
       .empty{
         border:1.5px dashed var(--line);border-radius:var(--radius);padding:26px 18px;text-align:center;color:var(--muted);font-size:13.5px;
       }
@@ -452,7 +444,7 @@
           <button class="step-tab" type="button" data-goto-step="3" id="tabPlay">3 再生</button>
         </nav>
         <div class="hero-stats" aria-label="現在の集計">
-          <div class="stat"><b id="statPlaylists">0</b><span>全リスト</span></div>
+          <div class="stat"><b id="statPlaylists">0</b><span>リスト選択中</span></div>
           <div class="stat"><b id="statTracks">0 曲</b><span>選択中</span></div>
           <div class="stat"><b id="statTime">0:00</b><span>合計</span></div>
         </div>
@@ -735,11 +727,6 @@
       box.innerHTML = state.playlists.map(function(pl){
         var loaded = pl.tracksLoaded !== false;
         var count = loaded ? pl.tracks.length : (pl.count || 0);
-        var trackRows = loaded ? pl.tracks.map(function(t,i){
-          return '<li><span class="t">' + esc(t.title) + (t.artist ? ' <span class="a">／ ' + esc(t.artist) + '</span>' : '') + '</span>' +
-                 '<span class="d">' + (t.durationSec ? fmt(t.durationSec) : "—") + '</span>' +
-                 '<button class="icon-btn" type="button" data-del-track="' + pl.id + ':' + i + '" aria-label="この曲を削除" style="width:38px;height:38px;min-height:38px;font-size:12px">✕</button></li>';
-        }).join("") : "";
         var thumb = pl.thumb || "";
         if(!thumb && loaded){
           for(var ti = 0; ti < pl.tracks.length; ti++){
@@ -749,18 +736,12 @@
         var thumbHtml = thumb
           ? '<img class="pl-thumb" src="' + esc(thumb) + '" alt="" loading="lazy" />'
           : '<span class="pl-thumb pl-thumb-ph" aria-hidden="true">♪</span>';
-        var badge = pl.loading ? "読込中…" : (pl.included ? "選択中" : "未選択");
-        var timeHtml = loaded
-          ? '<div class="pl-stats"><span class="pl-stat"><b>' + count + '</b><small>曲</small></span><span class="pl-stat">' + fmtLong(plSec(pl)) + '</span></div>' +
-            '<div class="pl-info"><span class="pl-badge">' + badge + '</span><span>' + fmt(plSec(pl)) + '</span></div>'
-          : '<div class="pl-stats"><span class="pl-stat"><b>' + count + '</b><small>曲</small></span></div>' +
-            '<div class="pl-info"><span class="pl-badge">' + badge + '</span><span>タップで選択</span></div>';
+        var countHtml = '<div class="pl-stats"><span class="pl-stat"><b>' + count + '</b><small>曲</small></span></div>';
         return '<article class="pl-card ' + (pl.included ? "on" : "off") + (pl.loading ? " loading" : "") + '" style="--pl:' + pl.color + '" data-toggle-pl="' + pl.id + '" role="button" tabindex="0" aria-pressed="' + (pl.included ? "true" : "false") + '" title="タップで選択／解除" aria-label="' + esc(pl.name) + (pl.included ? "（選択中）" : "（未選択）") + '">' +
           '<span class="pl-thumb-wrap">' + thumbHtml +
             (pl.ytId ? '' : '<button class="pl-del-overlay" type="button" data-del-pl="' + pl.id + '" aria-label="プレイリストを削除">✕</button>') +
             '<span class="pl-check" aria-hidden="true">' + (pl.included ? "✓" : "") + '</span></span>' +
-          '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' + timeHtml + '</div>' +
-          (loaded && pl.tracks.length ? '<details class="pl-tracks-wrap"><summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:var(--muted);padding:6px 0 2px;list-style:none">曲一覧 ▾</summary><ul class="pl-tracks">' + trackRows + '</ul></details>' : '') +
+          '<div class="pl-meta"><div class="pl-name">' + esc(pl.name) + '</div>' + countHtml + '</div>' +
         '</article>';
       }).join("");
     }
@@ -773,7 +754,7 @@
     var sel = selectedPlaylists();
     var tracks = sel.reduce(function(a,p){return a+p.tracks.length;},0);
     var sec = sel.reduce(function(a,p){return a+plSec(p);},0);
-    $("statPlaylists").textContent = state.playlists.length;
+    $("statPlaylists").textContent = state.playlists.filter(function(p){ return p.included; }).length;
     $("statTracks").textContent = tracks + " 曲";
     $("statTime").textContent = fmt(sec);
     updateBottomBar();
