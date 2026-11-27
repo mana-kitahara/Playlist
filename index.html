@@ -400,7 +400,6 @@
       /* 無効化されたスイッチ行 */
       .switch-row.is-disabled .txt{opacity:.55}
       .switch-row.is-disabled .switch{opacity:.4;pointer-events:none}
-      .balance-note{font-size:12px;color:var(--red);font-weight:700;display:block;margin-top:2px}
       .notice{
         background:var(--red-soft);border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;color:var(--ink-2);margin-top:13px;
       }
@@ -462,8 +461,22 @@
         cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;flex:none;
       }
       .loop-toggle svg{width:24px;height:24px;display:block;fill:currentColor;flex:none}
-      .loop-toggle[aria-pressed="true"]{color:var(--red)}
+      .loop-toggle{position:relative}
+      .loop-toggle[data-loop="all"],.loop-toggle[data-loop="one"]{color:var(--red)}
+      .loop-badge{
+        position:absolute;top:2px;right:2px;min-width:16px;height:16px;border-radius:999px;
+        background:var(--red);color:#fff;font-size:10px;font-weight:900;line-height:16px;text-align:center;
+        padding:0 3px;display:none;pointer-events:none;
+      }
+      .loop-toggle[data-loop="one"] .loop-badge{display:block}
       .loop-toggle:active{transform:scale(.94)}
+      header .settings-panel{margin-bottom:10px}
+      /* 曲切り替え時のスライド：アートワーク＋曲名まわりが横に滑って入れ替わる */
+      .np-slide{will-change:transform,opacity}
+      @keyframes npSlideNext{from{transform:translateX(64px);opacity:.2}to{transform:translateX(0);opacity:1}}
+      @keyframes npSlidePrev{from{transform:translateX(-64px);opacity:.2}to{transform:translateX(0);opacity:1}}
+      .np-slide.slide-next{animation:npSlideNext .38s cubic-bezier(.22,.8,.32,1)}
+      .np-slide.slide-prev{animation:npSlidePrev .38s cubic-bezier(.22,.8,.32,1)}
       /* 曲一覧の折りたたみ */
       .tracklist-fold{margin-top:16px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);overflow:hidden}
       .tracklist-fold>summary{
@@ -520,6 +533,7 @@
         html{scroll-behavior:auto}
         .btn,.switch::after,.pl-card,.howto>summary .chev,.big-play{transition:none}
         .spin{animation:none}
+        .np-slide.slide-next,.np-slide.slide-prev{animation:none}
         .nudge .pl-card{animation:none}
       }
     </style>
@@ -567,6 +581,13 @@
             </button>
           </div>
         </div>
+        <section class="card settings-panel" id="settingsPanel" hidden aria-labelledby="settingsH">
+          <h2 id="settingsH"><span class="dot"></span>設定</h2>
+          <div class="btn-row">
+            <button class="btn" id="settingsReloadBtn" type="button">↻ プレイリストを再読み込み</button>
+            <button class="btn ghost" id="settingsLogoutBtn" type="button">ログアウト</button>
+          </div>
+        </section>
         <nav class="steps-nav" id="stepsNav" aria-label="進み方">
           <button class="step-tab is-active" type="button" data-goto-step="1">1 選ぶ</button>
           <button class="step-tab" type="button" data-goto-step="2">2 設定</button>
@@ -578,19 +599,6 @@
           <div class="stat"><b id="statTime">0:00</b><span>合計</span></div>
         </div>
       </header>
-
-      <div class="inline-status" id="inlineStatus" role="status" aria-live="polite" hidden></div>
-
-      <section class="card settings-panel" id="settingsPanel" hidden aria-labelledby="settingsH">
-        <h2 id="settingsH"><span class="dot"></span>設定</h2>
-        <p class="sub">YouTube連携の設定です。通常は触らなくて大丈夫です。</p>
-        <label class="f" for="settingsClientIdInput">クライアントID</label>
-        <input type="text" id="settingsClientIdInput" placeholder="クライアントID（初回のみ）" autocomplete="off" autocapitalize="none" spellcheck="false" />
-        <div class="btn-row">
-          <button class="btn" id="settingsReloadBtn" type="button">↻ プレイリストを再読み込み</button>
-          <button class="btn ghost" id="settingsLogoutBtn" type="button">ログアウト</button>
-        </div>
-      </section>
 
       <div class="view" id="viewSelect">
         <div>
@@ -632,8 +640,8 @@
 
           <div class="seg" role="group" aria-label="並び順">
             <button type="button" data-mode="append"><b>そのままつなげる</b></button>
-            <button type="button" data-mode="interleave" class="sel"><b>交互ミックス <span class="rec">おすすめ</span></b></button>
-            <button type="button" data-mode="spread"><b>アーティスト分散</b></button>
+            <button type="button" data-mode="interleave" class="sel"><b>交互にミックス <span class="rec">おすすめ</span></b></button>
+            <button type="button" data-mode="spread"><b>アーティスト均等配置</b></button>
             <button type="button" data-mode="shuffle"><b>シャッフル</b></button>
           </div>
 
@@ -641,11 +649,6 @@
             <div class="txt"><b>重複する曲を取り除く <span class="rec">おすすめ</span></b></div>
             <button class="switch" id="dedupeSwitch" type="button" role="switch" aria-checked="true" aria-label="重複する曲を取り除く"></button>
           </div>
-          <div class="switch-row" id="balanceRow">
-            <div class="txt"><b>各プレイリストを均等に使う</b><span>※シャッフル再生には適用されません</span></div>
-            <button class="switch" id="balanceSwitch" type="button" role="switch" aria-checked="false" aria-label="各プレイリストを均等に使う"></button>
-          </div>
-
         </section>
       </div>
 
@@ -660,6 +663,7 @@
           </div>
 
           <div class="player-section" id="playerSection" hidden>
+            <div class="np-slide" id="npSlide">
             <div class="artwork-wrap">
               <span class="artwork-ph" id="artworkPh" aria-hidden="true">♪</span>
               <img class="artwork-img" id="nowArtwork" alt="" hidden>
@@ -672,6 +676,7 @@
               <div class="now-playing-title" id="nowPlayingTitle"><span class="np-title-inner" id="nowPlayingTitleInner">—</span></div>
               <div class="now-playing-artist" id="nowPlayingArtist"></div>
             </div>
+            </div>
             <div class="seek-wrap">
               <input class="seek-bar" type="range" id="seekBar" min="0" max="0" step="1" value="0" aria-label="再生位置">
               <div class="seek-times"><span id="seekCur">0:00</span><span id="seekDur">0:00</span></div>
@@ -681,8 +686,9 @@
               <div class="ctrl-unit"><button class="player-btn" id="playerPrevBtn" type="button" aria-label="前の曲へ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2.2v14H6zM19 5v14L9.5 12z"/></svg></button></div>
               <div class="ctrl-unit"><button class="player-btn main" id="playerPlayBtn" type="button" aria-label="再生／一時停止"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button></div>
               <div class="ctrl-unit"><button class="player-btn" id="playerNextBtn" type="button" aria-label="次の曲へ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.8 5H18v14h-2.2zM5 5v14l9.5-7z"/></svg></button></div>
-              <div class="ctrl-unit"><button class="loop-toggle" id="playerLoopBtn" type="button" aria-pressed="false" aria-label="ループ再生のオン／オフ" title="ループ再生">
+              <div class="ctrl-unit"><button class="loop-toggle" id="playerLoopBtn" type="button" data-loop="off" aria-label="ループ再生：オフ（押すとプレイリスト全体のループ）" title="ループ再生">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                <span class="loop-badge" aria-hidden="true">1</span>
               </button></div>
             </div>
             <div class="now-playing-pos" id="nowPlayingPos">1曲目 / 全0曲</div>
@@ -731,7 +737,6 @@
     playlists: [],   // {id,name,color,included,tracks:[{title,artist,videoId,durationSec}]}
     mode: "interleave",
     dedupe: true,
-    balance: false,
     result: [],      // mixed tracks with source info
     lastDedupeRemoved: 0,
     resultPlayable: false
@@ -747,7 +752,8 @@
   var playerPos = 0;
   var playerIsPlaying = false;
   var playerStarted = false;
-  var playerLoop = false;
+  var playerLoopMode = 0; // 0=オフ, 1=プレイリスト全体ループ, 2=この曲だけリピート
+  var prevPlayerIdx = -1; // スライド方向の判定用（前回表示していた曲）
   var seekDragging = false;
   var seekTrackIdx = -1;
   // 再生／一時停止は同じ形のSVGアイコンだけを切り替える（ボタンの見た目は状態で変えない）
@@ -1035,10 +1041,82 @@
     else if(e.data === YT.PlayerState.PAUSED){ playerIsPlaying = false; }
     else if(e.data === YT.PlayerState.ENDED){
       playerIsPlaying = false;
+      if(playerLoopMode === 2 && playerQueue.length){
+        // この曲だけリピート：同じ曲を先頭から再生し直す
+        if(ytPlayer && ytPlayerReady){ try{ ytPlayer.seekTo(0, true); ytPlayer.playVideo(); playerIsPlaying = true; playerStarted = true; updatePlayerUI(); return; }catch(err){} }
+        loadCurrentVideo(true); return;
+      }
       if(playerPos < playerQueue.length - 1){ playerPos++; loadCurrentVideo(true); return; }
-      if(playerLoop && playerQueue.length){ playerPos = 0; loadCurrentVideo(true); return; }
+      if(playerLoopMode === 1 && playerQueue.length){ playerPos = 0; loadCurrentVideo(true); return; }
     }
     updatePlayerUI();
+  }
+  /* ---------- バックグラウンド再生（Media Session API） ----------
+     ロック画面／通知領域に曲名・アーティスト・アートワークを出し、
+     そちらから再生／一時停止／次へ／前へを操作できるようにする。
+     ページが隠れたときに自動で止める処理は入れない。 */
+  function updateMediaSession(){
+    if(!("mediaSession" in navigator)) return;
+    try{
+      var idx = currentResultIdx();
+      var t = idx >= 0 ? state.result[idx] : null;
+      if(!t){
+        navigator.mediaSession.metadata = null;
+        navigator.mediaSession.playbackState = "none";
+        return;
+      }
+      var artwork = [];
+      if(t.videoId){
+        artwork = [
+          { src: "https://i.ytimg.com/vi/" + t.videoId + "/hqdefault.jpg", sizes: "480x360", type: "image/jpeg" },
+          { src: "https://i.ytimg.com/vi/" + t.videoId + "/mqdefault.jpg", sizes: "320x180", type: "image/jpeg" }
+        ];
+      }
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: t.title || "",
+        artist: t.artist || "",
+        album: t.source || "",
+        artwork: artwork
+      });
+      navigator.mediaSession.playbackState = playerIsPlaying ? "playing" : (playerStarted ? "paused" : "none");
+      var setHandler = function(action, fn){
+        try{ navigator.mediaSession.setActionHandler(action, fn); }catch(e){}
+      };
+      setHandler("play", function(){
+        if(ytPlayer && ytPlayerReady){ if(!playerStarted) loadCurrentVideo(true); else ytPlayer.playVideo(); }
+        else { var b = $("playerPlayBtn"); if(b) b.click(); }
+      });
+      setHandler("pause", function(){ if(ytPlayer && ytPlayerReady) ytPlayer.pauseVideo(); });
+      setHandler("nexttrack", function(){ goNextTrack(); });
+      setHandler("previoustrack", function(){ goPrevTrack(); });
+      setHandler("seekto", function(details){
+        if(ytPlayer && ytPlayerReady && details && typeof details.seekTime === "number"){ try{ ytPlayer.seekTo(details.seekTime, true); }catch(e){} }
+      });
+    }catch(e){ /* Media Session 非対応環境では何もしない */ }
+  }
+  function goNextTrack(){
+    if(!playerQueue.length) return;
+    if(playerPos < playerQueue.length - 1){ playerPos++; }
+    else if(playerLoopMode === 1 && playerQueue.length > 1){ playerPos = 0; }
+    else return;
+    if(ytPlayer && ytPlayerReady) loadCurrentVideo(true); else updatePlayerUI();
+  }
+  function goPrevTrack(){
+    if(!playerQueue.length) return;
+    if(playerPos > 0){ playerPos--; }
+    else if(playerLoopMode === 1 && playerQueue.length > 1){ playerPos = playerQueue.length - 1; }
+    else return;
+    if(ytPlayer && ytPlayerReady) loadCurrentVideo(true); else updatePlayerUI();
+  }
+  function syncLoopBtn(){
+    var b = $("playerLoopBtn");
+    if(!b) return;
+    var modeName = playerLoopMode === 1 ? "all" : (playerLoopMode === 2 ? "one" : "off");
+    b.setAttribute("data-loop", modeName);
+    b.setAttribute("aria-label",
+      playerLoopMode === 1 ? "ループ再生：プレイリスト全体（押すとこの曲だけリピート）" :
+      playerLoopMode === 2 ? "ループ再生：この曲だけリピート（押すと解除）" :
+      "ループ再生：オフ（押すとプレイリスト全体のループ）");
   }
   function loadCurrentVideo(autoplay){
     var idx = currentResultIdx();
@@ -1063,6 +1141,8 @@
     var idx = currentResultIdx();
     var artEl = $("nowArtwork"), artPh = $("artworkPh"), seekEl0 = $("seekBar");
     if(idx < 0){
+      prevPlayerIdx = -1;
+      updateMediaSession();
       if(posEl) posEl.textContent = "再生できる曲がありません";
       setNowPlayingTitle("—");
       if(artistEl) artistEl.textContent = "";
@@ -1091,6 +1171,19 @@
         if(artPh) artPh.hidden = false;
       }
     }
+    // 曲が変わったら、アートワーク＋曲名まわりをスライドさせて切り替える
+    // 次の曲へは左向き（新しい内容が右から滑り込む）、前の曲へは逆向き。
+    if(prevPlayerIdx >= 0 && prevPlayerIdx !== idx){
+      var slideEl = $("npSlide");
+      if(slideEl){
+        var isNext = idx > prevPlayerIdx || (playerLoopMode === 1 && prevPlayerIdx > idx);
+        // 全体ループで末尾→先頭に戻った場合は idx<prev でも「次へ」方向にする
+        slideEl.classList.remove("slide-next"); slideEl.classList.remove("slide-prev");
+        void slideEl.offsetWidth;
+        slideEl.classList.add(isNext ? "slide-next" : "slide-prev");
+      }
+    }
+    prevPlayerIdx = idx;
     // 曲が変わったらシークバーを先頭に戻し、長さ表示を曲の長さで初期化する
     if(seekTrackIdx !== idx){
       seekTrackIdx = idx;
@@ -1102,8 +1195,10 @@
     }
     if(playBtn){ playBtn.disabled = false; playBtn.innerHTML = playerIsPlaying ? PAUSE_ICON : PLAY_ICON; playBtn.setAttribute("aria-label", playerIsPlaying ? "一時停止" : "再生"); }
     var pb = $("playerPrevBtn"), nb = $("playerNextBtn");
-    if(pb) pb.disabled = playerLoop ? playerQueue.length <= 1 : playerPos <= 0;
-    if(nb) nb.disabled = playerLoop ? playerQueue.length <= 1 : playerPos >= playerQueue.length - 1;
+    if(pb) pb.disabled = playerLoopMode === 1 ? playerQueue.length <= 1 : playerPos <= 0;
+    if(nb) nb.disabled = playerLoopMode === 1 ? playerQueue.length <= 1 : playerPos >= playerQueue.length - 1;
+    syncLoopBtn();
+    updateMediaSession();
     // リスト側のハイライト
     document.querySelectorAll("#resultList li").forEach(function(li){
       var isCur = +li.getAttribute("data-result-idx") === idx;
@@ -1176,7 +1271,7 @@
     });
   }
   function showStatus(msg){
-    ["inlineStatus","inlineStatusGate"].forEach(function(id){
+    ["inlineStatusGate"].forEach(function(id){
       var el = $(id); if(!el) return;
       el.textContent = msg; el.hidden = false;
     });
@@ -1336,12 +1431,8 @@
       groups.forEach(function(g){ out = out.concat(g); });
       out = shuffleArr(out);
     } else if(state.mode === "interleave"){
-      var queues = groups.map(function(g){ return state.balance ? g.slice() : g.slice(); });
+      var queues = groups.map(function(g){ return g.slice(); });
       var maxLen = Math.max.apply(null, queues.map(function(q){return q.length;}));
-      if(state.balance){
-        // 均等：短いリストは曲を繰り返さず、比率に合わせて間引いて混ぜる代わりに
-        // ラウンドごとに各リスト1曲ずつ（尽きたら抜ける）＝自然に均等寄りになる
-      }
       var remain = true, round = 0;
       while(remain){
         remain = false;
@@ -1400,7 +1491,7 @@
     if(n === 3 && !state.result.length){ showStatus("先にミックスを作成してください"); n = selectedPlaylists().length ? 2 : 1; }
     // 目的の画面へ進めたときは、前の画面の案内表示は残さない（進めなかったときの案内だけを画面内に出す）
     if(n === requestedStep){
-      ["inlineStatus","inlineStatusGate"].forEach(function(id){ var el = $(id); if(el) el.hidden = true; });
+      ["inlineStatusGate"].forEach(function(id){ var el = $(id); if(el) el.hidden = true; });
     }
     currentStep = n;
     // 画面（ステップ）を切り替えたら歯車の設定パネルは自動で閉じる
@@ -1580,7 +1671,7 @@
     window.scrollTo(0, 0);
   }
   function requestToken(scope, onOk){
-    if(!auth.clientId){ showStatus("先にクライアントIDを入力してください"); var cidEl = $("settingsClientIdInput") || $("gateClientIdInput"); if(cidEl) cidEl.focus(); return; }
+    if(!auth.clientId){ showStatus("先にクライアントIDを入力してください"); var cidEl = $("gateClientIdInput"); if(cidEl) cidEl.focus(); return; }
     if(!gisReady()){ showStatus("Googleログインの読み込み中です。数秒待ってからもう一度押してください"); return; }
     auth.pending = { scope: scope, onOk: onOk };
     // スコープごとにクライアントを作り直す（読み取り用／保存用で許可が違うため）
@@ -1843,34 +1934,22 @@
     else showStatus("すべて選択しました");
   });
 
-  function updateBalanceAvailability(){
-    var isShuffle = state.mode === "shuffle";
-    var row = $("balanceRow"), sw = $("balanceSwitch");
-    if(row) row.classList.toggle("is-disabled", isShuffle);
-    if(sw){
-      sw.setAttribute("aria-disabled", String(isShuffle));
-      if(isShuffle) sw.setAttribute("tabindex", "-1"); else sw.removeAttribute("tabindex");
-    }
-  }
   document.querySelectorAll(".seg button").forEach(function(btn){
     btn.addEventListener("click", function(){
       document.querySelectorAll(".seg button").forEach(function(b){ b.classList.remove("sel"); });
       btn.classList.add("sel");
       state.mode = btn.getAttribute("data-mode");
-      updateBalanceAvailability();
     });
   });
 
   function bindSwitch(id, key){
     $(id).addEventListener("click", function(){
-      if(key === "balance" && state.mode === "shuffle") return;
       var now = $(id).getAttribute("aria-checked") === "true";
       $(id).setAttribute("aria-checked", String(!now));
       state[key] = !now;
     });
   }
   bindSwitch("dedupeSwitch","dedupe");
-  bindSwitch("balanceSwitch","balance");
 
   /* ---------- サイト内プレイヤーの操作 ---------- */
   var pPlay = $("playerPlayBtn");
@@ -1894,21 +1973,18 @@
     }
   });
   var pPrev = $("playerPrevBtn");
-  if(pPrev) pPrev.addEventListener("click", function(){
-    if(playerPos > 0){ playerPos--; if(ytPlayer && ytPlayerReady) loadCurrentVideo(true); else updatePlayerUI(); }
-    else if(playerLoop && playerQueue.length > 1){ playerPos = playerQueue.length - 1; if(ytPlayer && ytPlayerReady) loadCurrentVideo(true); else updatePlayerUI(); }
-  });
+  if(pPrev) pPrev.addEventListener("click", function(){ goPrevTrack(); });
   var pNext = $("playerNextBtn");
-  if(pNext) pNext.addEventListener("click", function(){
-    if(playerPos < playerQueue.length - 1){ playerPos++; if(ytPlayer && ytPlayerReady) loadCurrentVideo(true); else updatePlayerUI(); }
-    else if(playerLoop && playerQueue.length > 1){ playerPos = 0; if(ytPlayer && ytPlayerReady) loadCurrentVideo(true); else updatePlayerUI(); }
-  });
+  if(pNext) pNext.addEventListener("click", function(){ goNextTrack(); });
   var pLoop = $("playerLoopBtn");
   if(pLoop) pLoop.addEventListener("click", function(){
-    playerLoop = !playerLoop;
-    pLoop.setAttribute("aria-pressed", String(playerLoop));
-    updatePlayerUI();
-    showStatus(playerLoop ? "ループ再生をオンにしました（最後の曲のあと最初に戻ります）" : "ループ再生をオフにしました");
+    // 3段階切り替え：オフ → プレイリスト全体ループ → この曲だけリピート → オフ
+    playerLoopMode = (playerLoopMode + 1) % 3;
+    syncLoopBtn();
+    // 状態表示欄は出さない。状態はボタン自体の色と「1」の印だけで分かる形にする
+    var pb2 = $("playerPrevBtn"), nb2 = $("playerNextBtn");
+    if(pb2) pb2.disabled = playerLoopMode === 1 ? playerQueue.length <= 1 : playerPos <= 0;
+    if(nb2) nb2.disabled = playerLoopMode === 1 ? playerQueue.length <= 1 : playerPos >= playerQueue.length - 1;
   });
   var pShuffle = $("playerShuffleBtn");
   if(pShuffle) pShuffle.addEventListener("click", function(){
@@ -1965,7 +2041,8 @@
   /* ---------- ログインまわりのイベント ---------- */
   function syncClientId(value, exceptEl){
     auth.clientId = value;
-    [$("gateClientIdInput"), $("settingsClientIdInput")].forEach(function(el){
+    // クライアントIDの入力欄は初回ログイン画面だけ。保存済みの値は裏側でそのまま使う
+    [$("gateClientIdInput")].forEach(function(el){
       if(el && el !== exceptEl) el.value = value;
     });
     try{ localStorage.setItem(LS_KEY, value); }catch(e){ /* 保存できなくても動作は続行 */ }
@@ -1978,9 +2055,8 @@
     requestToken(READ_SCOPE, loadMyPlaylists);
   }
   try{ auth.clientId = localStorage.getItem(LS_KEY) || ""; }catch(e){ auth.clientId = ""; }
-  if(auth.clientId){ $("gateClientIdInput").value = auth.clientId; $("settingsClientIdInput").value = auth.clientId; }
+  if(auth.clientId){ $("gateClientIdInput").value = auth.clientId; }
   $("gateClientIdInput").addEventListener("change", function(){ syncClientId($("gateClientIdInput").value.trim(), $("gateClientIdInput")); });
-  $("settingsClientIdInput").addEventListener("change", function(){ syncClientId($("settingsClientIdInput").value.trim(), $("settingsClientIdInput")); });
   /* ヘッダーの歯車：設定パネルの開閉 */
   $("settingsBtn").addEventListener("click", function(){
     var panel = $("settingsPanel");
@@ -2162,7 +2238,7 @@
     }
   });
 
-  updateBalanceAvailability();
+  syncLoopBtn();
   renderPlaylists();
   renderResult();
 })();
