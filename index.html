@@ -421,7 +421,7 @@
       .artwork-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;color:var(--muted)}
       .artwork-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
       /* 埋め込みプレイヤー本体は音声再生専用：画面外に配置して一切見せず、タップもできないようにする（display:noneにはしない） */
-      .player-frame-wrap{position:fixed;left:-10000px;top:0;width:320px;height:180px;overflow:hidden;opacity:0;pointer-events:none;z-index:-1}
+      .player-frame-wrap{position:fixed;left:0;bottom:0;width:80px;height:45px;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1}
       .player-frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
       .player-frame-ph{display:none}
       /* 操作列：アイコンのみ（文字ラベルなし） */
@@ -755,6 +755,11 @@
   var prevPlayerIdx = -1; // スライド方向の判定用（前回表示していた曲）
   var seekDragging = false;
   var seekTrackIdx = -1;
+  var preservePlayback = null; // 曲削除などでリストを作り直すとき、再生中の曲を引き継ぐための保留情報 {track,pos,started,playing}
+  var bgResumeWanted = false;  // アプリ切替で隠れる直前まで再生していたか（復帰時の自動再開用）
+  var bgUserPaused = false;    // ロック画面などから明示的に止められたか（その場合は自動再開しない）
+  var wakeLock = null;
+  var keepAliveAudio = null;
   // 再生／一時停止は同じ形のSVGアイコンだけを切り替える（ボタンの見た目は状態で変えない）
   var PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
   var PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4.4" height="14" rx="1.2"/><rect x="13.6" y="5" width="4.4" height="14" rx="1.2"/></svg>';
@@ -1082,10 +1087,11 @@
         try{ navigator.mediaSession.setActionHandler(action, fn); }catch(e){}
       };
       setHandler("play", function(){
+        bgUserPaused = false;
         if(ytPlayer && ytPlayerReady){ if(!playerStarted) loadCurrentVideo(true); else ytPlayer.playVideo(); }
         else { var b = $("playerPlayBtn"); if(b) b.click(); }
       });
-      setHandler("pause", function(){ if(ytPlayer && ytPlayerReady) ytPlayer.pauseVideo(); });
+      setHandler("pause", function(){ bgUserPaused = true; bgResumeWanted = false; if(ytPlayer && ytPlayerReady) ytPlayer.pauseVideo(); });
       setHandler("nexttrack", function(){ goNextTrack(); });
       setHandler("previoustrack", function(){ goPrevTrack(); });
       setHandler("seekto", function(details){
@@ -1093,6 +1099,71 @@
       });
     }catch(e){ /* Media Session 非対応環境では何もしない */ }
   }
+  /* ---------- バックグラウンド再生の維持（他のアプリへ切り替えたとき対策） ----------
+     ・再生中だけ、ページ側でも無音の音声を流し続ける。Chrome に「メディア再生中の
+       ページ」と認識させることで、裏に回ったときにページごと止められにくくする。
+     ・再生中は Wake Lock で画面スリープを抑える。
+     ・それでもブラウザに止められた場合は、アプリに戻ってきたときに自動で再開する
+       （ロック画面などから自分で止めたときは再開しない）。 */
+  function ensureKeepAliveAudio(){
+    if(keepAliveAudio) return keepAliveAudio;
+    try{
+      var sr = 8000, len = sr; // 1秒ぶんの無音WAVをその場で組み立てる
+      var buf = new ArrayBuffer(44 + len), v = new DataView(buf);
+      var wstr = function(off, s){ for(var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
+      wstr(0, "RIFF"); v.setUint32(4, 36 + len, true); wstr(8, "WAVE"); wstr(12, "fmt ");
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, sr, true); v.setUint32(28, sr, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+      wstr(36, "data"); v.setUint32(40, len, true);
+      for(var i = 0; i < len; i++) v.setUint8(44 + i, 128); // 8bit PCM の無音は 128
+      keepAliveAudio = new Audio(URL.createObjectURL(new Blob([buf], { type: "audio/wav" })));
+      keepAliveAudio.loop = true;
+    }catch(e){ keepAliveAudio = null; }
+    return keepAliveAudio;
+  }
+  function syncKeepAlive(){
+    var a = ensureKeepAliveAudio();
+    if(!a) return;
+    if(playerIsPlaying){
+      var p = a.play();
+      if(p && p.catch) p.catch(function(){});
+    } else {
+      try{ a.pause(); }catch(e){}
+    }
+  }
+  function syncWakeLock(){
+    if(!("wakeLock" in navigator)) return;
+    if(playerIsPlaying){
+      if(!wakeLock){
+        try{
+          navigator.wakeLock.request("screen").then(function(wl){
+            wakeLock = wl;
+            wl.addEventListener("release", function(){ if(wakeLock === wl) wakeLock = null; });
+          }).catch(function(){});
+        }catch(e){}
+      }
+    } else if(wakeLock){
+      try{ wakeLock.release(); }catch(e){}
+      wakeLock = null;
+    }
+  }
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden){
+      if(playerIsPlaying){
+        bgResumeWanted = true; bgUserPaused = false;
+        // 隠れる瞬間に止められても流し続けるよう、その場でもう一度再生を伝える
+        if(ytPlayer && ytPlayerReady){ try{ ytPlayer.playVideo(); }catch(e){} }
+      }
+    } else {
+      syncWakeLock(); // Wake Lock は非表示で自動解除されるので取り直す
+      if(bgResumeWanted && !bgUserPaused && ytPlayer && ytPlayerReady){
+        try{
+          if(ytPlayer.getPlayerState && ytPlayer.getPlayerState() === 2){ ytPlayer.playVideo(); }
+        }catch(e){}
+      }
+      bgResumeWanted = false;
+    }
+  });
   function goNextTrack(){
     if(!playerQueue.length) return;
     if(playerPos < playerQueue.length - 1){ playerPos++; }
@@ -1136,6 +1207,8 @@
     updatePlayerUI();
   }
   function updatePlayerUI(){
+    syncKeepAlive();
+    syncWakeLock();
     var posEl = $("nowPlayingPos"), titleEl = $("nowPlayingTitle"), artistEl = $("nowPlayingArtist"), playBtn = $("playerPlayBtn");
     var idx = currentResultIdx();
     var artEl = $("nowArtwork"), artPh = $("artworkPh"), seekEl0 = $("seekBar");
@@ -1571,6 +1644,7 @@
       notice.hidden = true;
       state.resultPlayable = false;
       rebuildPlayerQueue(false);
+      if(preservePlayback){ preservePlayback = null; if(ytPlayer && ytPlayerReady){ try{ ytPlayer.stopVideo(); }catch(e){} } }
       var npb0 = $("noPlayBox"); if(npb0) npb0.hidden = true;
       var ps0 = $("playerSection"); if(ps0) ps0.hidden = true;
       $("playHero").hidden = true;
@@ -1588,6 +1662,30 @@
     updatePlaySummary();
 
     rebuildPlayerQueue(false);
+    /* 曲の削除などで呼ばれたときは、再生中の曲を止めずに引き継ぐ。
+       覚えておいた曲オブジェクトが新しいリストにもあれば、その曲のまま
+       （プレイヤーには触らない）。消えたのが再生中の曲自体なら、その位置に
+       来た次の曲へ引き継ぐ。 */
+    var keep = preservePlayback; preservePlayback = null;
+    var keepVideoLoaded = false;
+    var keepDeletedCurrent = false;
+    if(keep){
+      var keepIdx = keep.track ? state.result.indexOf(keep.track) : -1;
+      var keepPos = keepIdx > -1 ? playerQueue.indexOf(keepIdx) : -1;
+      if(keepPos > -1){
+        playerPos = keepPos;
+        playerStarted = keep.started;
+        playerIsPlaying = keep.playing;
+        seekTrackIdx = keepIdx;   // シークバーを先頭に戻さない
+        prevPlayerIdx = keepIdx;  // スライド演出も出さない
+        keepVideoLoaded = true;
+      } else if(playerQueue.length){
+        playerPos = Math.min(keep.pos, playerQueue.length - 1);
+        keepDeletedCurrent = true;
+      } else if(ytPlayer && ytPlayerReady){
+        try{ ytPlayer.stopVideo(); }catch(e){}
+      }
+    }
     var tf1 = $("tracklistFold"); if(tf1) tf1.hidden = false;
     var tc1 = $("tracklistCount"); if(tc1) tc1.textContent = "全" + state.result.length + "曲";
     var td1 = $("tracklistDedupe"); if(td1){ if(state.lastDedupeRemoved > 0){ td1.textContent = "重複 " + state.lastDedupeRemoved + "曲を除きました"; td1.hidden = false; } else { td1.textContent = ""; td1.hidden = true; } }
@@ -1641,7 +1739,12 @@
       notice.hidden = true;
       notice.textContent = "";
       // プレイヤーの準備（API準備済みなら作成、未準備なら onYouTubeIframeAPIReady で作成）
-      if(ytPlayer && ytPlayerReady){ loadCurrentVideo(false); }
+      if(keepVideoLoaded){
+        // 再生中の曲はそのまま流れ続ける：読み込み直さず表示だけ更新する
+        updatePlayerUI();
+      }
+      else if(keepDeletedCurrent && ytPlayer && ytPlayerReady){ loadCurrentVideo(keep.playing); }
+      else if(ytPlayer && ytPlayerReady){ loadCurrentVideo(false); }
       else { createYtPlayer(); updatePlayerUI(); }
     } else {
       state.resultPlayable = false;
@@ -2046,6 +2149,10 @@
         sb.value = Math.floor(cur);
         syncSeekFill(sb);
         var sc2 = $("seekCur"); if(sc2) sc2.textContent = fmt(cur);
+        // ロック画面／通知のシーク表示にも現在位置を渡す（バックグラウンド操作用）
+        if(typeof dur === "number" && dur > 0 && "mediaSession" in navigator && navigator.mediaSession.setPositionState){
+          try{ navigator.mediaSession.setPositionState({ duration: dur, playbackRate: 1, position: Math.min(Math.max(cur, 0), dur) }); }catch(e){}
+        }
       }
     }catch(e){ /* プレイヤー未準備時は無視 */ }
   }, 500);
@@ -2140,10 +2247,29 @@
     else { createYtPlayer(); updatePlayerUI(); var pb = $("playerSection"); if(pb) pb.scrollIntoView({behavior:"smooth", block:"center"}); }
   });
 
+  /* ---------- 再生リストの曲を削除する（再生中の曲は止めない） ----------
+     素の renderResult はプレイヤーを先頭に戻してしまうので、削除の前に
+     「いま読み込まれている曲」を preservePlayback に覚えておき、
+     renderResult 側でその曲の再生を引き継ぐ。 */
+  function removeResultTrack(idx){
+    if(idx < 0 || idx >= state.result.length) return;
+    if(ytPlayer && playerStarted){
+      var curIdx = currentResultIdx();
+      preservePlayback = {
+        track: curIdx > -1 ? state.result[curIdx] : null,
+        pos: playerPos,
+        started: playerStarted,
+        playing: playerIsPlaying
+      };
+    }
+    state.result.splice(idx, 1);
+    renderResult();
+  }
+
   /* ---------- 曲一覧：左スワイプで削除（YouTube Music風） ----------
      行を左に引くと下の赤い削除エリアが見える。大きく引いて離すと即削除、
      少し引くとエリアが出たまま止まり、タップで削除（どちらも確認なし）。
-     削除は既存の data-del-result と同じ splice＋renderResult の流れを使う。
+     削除は既存の data-del-result と同じ removeResultTrack の流れを使う。
      縦方向の動きはスクロールに譲り、横方向だけに反応する。 */
   var SWIPE_ZONE_W = 84;     // 削除エリアの幅
   var SWIPE_DELETE_X = -136; // ここまで引いて離したら即削除
@@ -2208,7 +2334,7 @@
       var li = s.row.closest ? s.row.closest("li[data-result-idx]") : null;
       var idx = li ? +li.getAttribute("data-result-idx") : -1;
       if(swipeOpenRow === s.row) swipeOpenRow = null;
-      if(idx >= 0){ state.result.splice(idx, 1); renderResult(); }
+      if(idx >= 0){ removeResultTrack(idx); }
       return;
     }
     if(s.x <= -SWIPE_ZONE_W / 2){
@@ -2254,8 +2380,7 @@
       if(pl){ pl.tracks.splice(+parts[1],1); renderPlaylists(); }
     }
     if(t.hasAttribute("data-del-result")){
-      state.result.splice(+t.getAttribute("data-del-result"),1);
-      renderResult();
+      removeResultTrack(+t.getAttribute("data-del-result"));
     }
   });
 
