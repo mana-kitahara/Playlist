@@ -380,8 +380,7 @@
         padding:20px 16px;text-align:center;margin:6px 0 4px;
       }
       .no-play-box .np-title{font-size:19px;font-weight:900;line-height:1.45;margin:0 0 8px}
-      .no-play-box .np-reason{font-size:14px;color:var(--ink-2);line-height:1.65;margin:0 0 16px}
-      .no-play-box .btn{width:100%;min-height:56px;font-size:16px;border-radius:11px}
+      .no-play-box .np-reason{font-size:14px;color:var(--ink-2);line-height:1.65;margin:0}
       /* 手動追加アコーディオン */
       .manual-add{padding:0;overflow:hidden}
       .manual-add>summary{
@@ -658,7 +657,6 @@
           <div class="no-play-box" id="noPlayBox" hidden>
             <p class="np-title">このリストはサイト内で再生できません</p>
             <p class="np-reason">曲に YouTube のURL（動画ID）が含まれていないためです。下のリストで各曲の「YT Music ↗」からは1曲ずつ開けます。</p>
-            <button class="btn primary" id="noPlayActionBtn" type="button">選び直す（URL付きのリストを使う）</button>
           </div>
 
           <div class="player-section" id="playerSection" hidden>
@@ -756,6 +754,7 @@
   var seekDragging = false;
   var seekTrackIdx = -1;
   var preservePlayback = null; // 曲削除などでリストを作り直すとき、再生中の曲を引き継ぐための保留情報 {track,pos,started,playing}
+  var pendingMixAutoplay = false; // 「次へ：ミックスを作成」のタップをきっかけに自動再生するための保留フラグ（プレイヤーの準備ができ次第、消費して先頭の曲から再生する）
   var bgResumeWanted = false;  // アプリ切替で隠れる直前まで再生していたか（復帰時の自動再開用）
   var bgUserPaused = false;    // ロック画面などから明示的に止められたか（その場合は自動再開しない）
   var wakeLock = null;
@@ -1032,9 +1031,18 @@
     ytPlayer = new YT.Player("ytPlayer", {
       width: "100%", height: "100%",
       videoId: vid,
-      playerVars: { playsinline: 1, rel: 0, modestbranding: 1, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3 },
+      playerVars: { autoplay: pendingMixAutoplay ? 1 : 0, playsinline: 1, rel: 0, modestbranding: 1, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3 },
       events: {
-        onReady: function(){ ytPlayerReady = true; updatePlayerUI(); },
+        onReady: function(){
+          ytPlayerReady = true;
+          if(pendingMixAutoplay){
+            // ミックス作成のタップから作られたプレイヤー：準備ができたらそのまま再生を始める
+            pendingMixAutoplay = false;
+            playerStarted = true;
+            try{ ytPlayer.playVideo(); }catch(e){}
+          }
+          updatePlayerUI();
+        },
         onStateChange: onYtStateChange
       }
     });
@@ -1561,6 +1569,7 @@
     if(state.dedupe) out = dedupeTracks(out);
     state.lastDedupeRemoved = state.dedupe ? (beforeDedupe - out.length) : 0;
     state.result = out;
+    pendingMixAutoplay = true; // このボタンのタップをきっかけに、再生画面へ移ったら先頭の曲から自動で流す
     renderResult();
     var tfNew = $("tracklistFold"); if(tfNew) tfNew.open = false; // 曲一覧は最初は収納状態
     showStatus("ミックスを作成しました（" + out.length + " 曲）");
@@ -1744,10 +1753,11 @@
         updatePlayerUI();
       }
       else if(keepDeletedCurrent && ytPlayer && ytPlayerReady){ loadCurrentVideo(keep.playing); }
-      else if(ytPlayer && ytPlayerReady){ loadCurrentVideo(false); }
+      else if(ytPlayer && ytPlayerReady){ var mixAuto = pendingMixAutoplay; pendingMixAutoplay = false; loadCurrentVideo(mixAuto); }
       else { createYtPlayer(); updatePlayerUI(); }
     } else {
       state.resultPlayable = false;
+      pendingMixAutoplay = false; // 再生できる曲がない場合は自動再生せず、従来どおり「再生できません」の案内を出す
       $("playHero").hidden = true;
       var ps2 = $("playerSection"); if(ps2) ps2.hidden = true;
       var npb2 = $("noPlayBox"); if(npb2) npb2.hidden = false;
@@ -2159,8 +2169,6 @@
 
   $("bbMixBtn").addEventListener("click", mix);
   $("bbNextBtn").addEventListener("click", function(){ goToStep(2); });
-  var npAction = $("noPlayActionBtn");
-  if(npAction) npAction.addEventListener("click", function(){ goToStep(1); });
   document.querySelectorAll("[data-goto-step]").forEach(function(btn){
     btn.addEventListener("click", function(){ goToStep(+btn.getAttribute("data-goto-step")); });
   });
